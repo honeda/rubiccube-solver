@@ -57,28 +57,28 @@ class Cube:
              [GRB, BR, BRY]]
         ])
 
-    def move(self, symbols):
+    def move(self, moves):
         """
         Args:
-            symbols (list): move symbols
+            moves (list): move symbols
         """
-        for i in symbols:
+        for i in moves:
             eval(f"self.{i}()")
 
-    def get_symbols(self):
+    def get_move_symbols(self):
         return self.move_symbols
 
-    def get_reverse_symbols(self, symbols):
+    def get_reverse_symbols(self, moves):
         """
         Args:
-            symbols (list): move symbols
+            moves (list): move symbols
         Return:
             list
         """
         ptn = {"F": "F_", "L": "L_", "R": "R_", "U": "U_", "D": "D_", "B": "B_", "F_": "F",
                "L_": "L", "R_": "R", "U_": "U", "D_": "D", "B_": "B"}
         lst = []
-        for i in symbols[::-1]:
+        for i in moves[::-1]:
             lst.append(ptn[i])
         return lst
 
