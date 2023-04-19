@@ -57,7 +57,7 @@ class Cube:
              [GRB, BR, BRY]]
         ])
 
-    def move(self, moves):
+    def play(self, moves):
         """
         Args:
             moves (list): move symbols
