@@ -68,7 +68,7 @@ class Cube:
     def get_move_symbols(self):
         return self.move_symbols
 
-    def get_reverse_symbols(self, moves):
+    def get_reverse_moves(self, moves):
         """
         Args:
             moves (list): move symbols
