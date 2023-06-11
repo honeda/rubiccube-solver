@@ -5,7 +5,7 @@ W = 1
 G = 2
 B = 3
 Y = 4
-O = 5
+O = 5  # noqa: E741
 R = 6
 WG = 7
 WO = 8
@@ -83,40 +83,40 @@ class Cube:
         return lst
 
     def F(self):
-        self.cube[0,:,:] = np.rot90(self.cube[0,:,:], k=3)
+        self.cube[0, :, :] = np.rot90(self.cube[0, :, :], k=3)
 
     def F_(self):
-        self.cube[0,:,:] = np.rot90(self.cube[0,:,:], k=1)
+        self.cube[0, :, :] = np.rot90(self.cube[0, :, :], k=1)
 
     def L(self):
-        self.cube[:,:,0] = np.rot90(self.cube[:,:,0], k=3)
+        self.cube[:, :, 0] = np.rot90(self.cube[:, :, 0], k=3)
 
     def L_(self):
-        self.cube[:,:,0] = np.rot90(self.cube[:,:,0], k=1)
+        self.cube[:, :, 0] = np.rot90(self.cube[:, :, 0], k=1)
 
     def R(self):
-        self.cube[:,:,2] = np.rot90(self.cube[:,:,2], k=1)
+        self.cube[:, :, 2] = np.rot90(self.cube[:, :, 2], k=1)
 
     def R_(self):
-        self.cube[:,:,2] = np.rot90(self.cube[:,:,2], k=3)
+        self.cube[:, :, 2] = np.rot90(self.cube[:, :, 2], k=3)
 
     def U(self):
-        self.cube[:,0,:] = np.rot90(self.cube[:,0,:], k=3)
+        self.cube[:, 0, :] = np.rot90(self.cube[:, 0, :], k=3)
 
     def U_(self):
-        self.cube[:,0,:] = np.rot90(self.cube[:,0,:], k=1)
+        self.cube[:, 0, :] = np.rot90(self.cube[:, 0, :], k=1)
 
     def D(self):
-        self.cube[:,2,:] = np.rot90(self.cube[:,2,:], k=3)
+        self.cube[:, 2, :] = np.rot90(self.cube[:, 2, :], k=3)
 
     def D_(self):
-        self.cube[:,2,:] = np.rot90(self.cube[:,2,:], k=1)
+        self.cube[:, 2, :] = np.rot90(self.cube[:, 2, :], k=1)
 
     def B(self):
-        self.cube[2,:,:] = np.rot90(self.cube[2,:,:], k=1)
+        self.cube[2, :, :] = np.rot90(self.cube[2, :, :], k=1)
 
     def B_(self):
-        self.cube[2,:,:] = np.rot90(self.cube[2,:,:], k=3)
+        self.cube[2, :, :] = np.rot90(self.cube[2, :, :], k=3)
 
     def show_cube(self):
         lst = []
