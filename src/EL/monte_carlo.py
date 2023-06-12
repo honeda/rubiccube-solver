@@ -71,8 +71,10 @@ class MonteCarloAgent(ELAgent):
                     n_state, reward, done = env.step(a)
                     experience.append({"state": s, "action": a, "reward": reward})
                     s = n_state
-                else:
-                    self.log(reward)
+                    if done:
+                        break
+
+                self.log(reward)
 
                 # Evaluate each state, action.
                 for i, x in enumerate(experience):
