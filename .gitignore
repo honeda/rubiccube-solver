@@ -2,3 +2,4 @@ poetry.lock
 notebooks/
 data/*
 *__pycache__
+.vscode/
