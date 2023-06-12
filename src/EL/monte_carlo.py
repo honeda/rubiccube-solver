@@ -12,21 +12,15 @@ import numpy as np
 
 class MonteCarloAgent(ELAgent):
 
-    def __init__(self, epsilon=0.1, Q_file=None):
+    def __init__(self, epsilon=0.1):
         super().__init__(epsilon)
-        if Q_file:
-            Q = pickle.load(open(Q_file, "rb"))
-            # dict -> defaultdict
-            for k, v in Q.items():
-                self.Q[k] = v
-            # self.Q = json.load(open(Q_file))
-            print(f"{len(self.Q)=}")
 
-    def learn(self, env, n_theme=50, theme_steps=3, theme_actions=None, n_episode=1000,
-              gamma=0.9, report_interval=50, Q_filedir="data/", Q_filename=None):
+    def learn(self, env, QN_file=None, n_theme=50, theme_steps=3, theme_actions=None,
+              n_episode=1000, gamma=0.9, report_interval=100, Q_filedir="data/", Q_filename=None):
         """
         Args:
             env (Environment):
+            QN_file (str, optional): Q file path. Defaults to None.
             n_theme (int, optional): Num of theme. Defaults to 50.
             theme_steps (int, optional): Num of step each theme.
                 Defaults to 3.
@@ -37,14 +31,24 @@ class MonteCarloAgent(ELAgent):
             n_episode (int, optional): Num of episode per theme.
                 Defaults to 1000.
             gamma (float, optional): update weight for Q. Defaults to 0.9.
-            report_interval (int, optional): Defaults to 50.
+            report_interval (int, optional): Defaults to 100.
             Q_filedir (str, optional): Defaults to "data/".
             Q_filename (_type_, optional): Defaults to None.
         """
         self.init_log()
         action_nums = list(range(len(ACTIONS)))
+
         self.Q = defaultdict(lambda: [0] * len(action_nums))
         N = defaultdict(lambda: [0] * len(action_nums))
+        if QN_file:
+            Q, N_ = pickle.load(open(QN_file, "rb"))
+            # dict -> defaultdict
+            for k, v in Q.items():
+                self.Q[k] = v
+            for k, v in N_.items():
+                N[k] = v
+            print(f"{len(self.Q)=}")
+
         n_unscrable_step = 25
 
         if theme_actions is None:
@@ -93,13 +97,13 @@ class MonteCarloAgent(ELAgent):
                 if e != 0 and e % report_interval == 0:
                     self.show_reward_log(episode=e)
 
-        # Save Q
+        # Save Q & N
         dt = datetime.datetime.now()
-        filename = ("Q_{}.pkl".format(dt.strftime("%Y%m%d%H%M"))
+        filename = ("QN_{}.pkl".format(dt.strftime("%Y%m%d%H%M"))
                     if Q_filename is None else Q_filename)
         with open(Path(Q_filedir, filename), "wb") as f:
-            pickle.dump(dict(self.Q), f)
-            # json.dump(self.Q, f, indent=2)
+            pickle.dump([dict(self.Q), dict(N)], f)
+            print(f"{len(self.Q)=}, {len(dict(self.Q))=}")
 
 
 def train():
