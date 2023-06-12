@@ -52,8 +52,10 @@ class MonteCarloAgent(ELAgent):
         n_unscrable_step = 25
 
         if theme_actions is None:
-            theme_actions = [np.random.choice(ACTIONS, size=theme_steps)
-                             for _ in n_theme]
+            theme_actions = [np.random.choice(action_nums, size=theme_steps)
+                             for _ in range(n_theme)]
+            # "F"の後に"F_"のように戻す動作は入れない.
+            theme_actions = [self.replace_wasted_work(i) for i in theme_actions]
 
         for scramble_actions in theme_actions:
             # Scramble
@@ -105,6 +107,27 @@ class MonteCarloAgent(ELAgent):
             pickle.dump([dict(self.Q), dict(N)], f)
             print(f"{len(self.Q)=}, {len(dict(self.Q))=}")
 
+    def replace_wasted_work(self, actions: np.ndarray):
+        """
+        Args:
+            actions (np.ndarray):
+        Return:
+            np.ndarray
+        """
+        a = actions.copy()
+        idx1, idx2 = [0], [0]
+        while not ((len(idx1) == 0) and (len(idx2) == 0)):
+            diff = np.diff(a, prepend=a[0])
+            # replace like "F F_" -> "F F"
+            idx1 = np.argwhere((diff == 1) & (a % 2 == 1)).ravel()
+            for i in idx1:
+                a[i] = a[i] - 1
+            # replace like "F_ F" -> "F_ F_"
+            idx2 = np.argwhere((diff == -1) & (a % 2 == 0)).ravel()
+            for i in idx2:
+                a[i] = a[i] + 1
+
+        return a
 
 def train():
     agent = MonteCarloAgent(epsilon=0.1, Q_file=None)
