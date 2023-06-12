@@ -26,12 +26,12 @@ class Environment:
         """Scramble the cube from origin.
 
         Args:
-            actions (list): action list. ex) ["F", "D", "L"]
+            actions (list): action list. ex) ["F", "D", "L"] or [0, 1, 4]
         """
         self.last_scramble_actions = actions
         self.reset_to_origin()
         for i in actions:
-            self.cube.step(i)
+            self.step(i)
 
     def get_unscramble_actions(self, scramble_actions: list):
         """Return unscramble steps.
@@ -60,10 +60,10 @@ class Environment:
             int : reward
             bool: is unscrambled
         """
-        if type(action) == int:
-            self.cube.step(ACTIONS[action])
-        else:
+        if type(action) == str:
             self.cube.step(action)
+        else:
+            self.cube.step(ACTIONS[int(action)])
 
         return (
             # HACK: もっといいstateのコピー、保存、比較方法
