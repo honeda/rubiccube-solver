@@ -97,7 +97,7 @@ class Cube:
             self._state[2, :, :] = np.rot90(self._state[2, :, :], k=3)
 
         else:
-            raise Exception
+            raise Exception(action)
 
     def is_origin(self):
         return (self._state == self.get_initial_state()).all()
