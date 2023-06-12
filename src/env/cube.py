@@ -37,14 +37,16 @@ COLORS = (
 class Cube:
 
     def __init__(self):
-        self.reset()
+        self._state = self.get_initial_state()
 
-        self.move_symbols = "F F_ L L_ R R_ U U_ D D_ B B_".split()
+    @property
+    def state(self):
+        return self._state
 
     def reset(self):
-        self.cube = self.get_initial_cube()
+        self._state = self.get_initial_state()
 
-    def get_initial_cube(self):
+    def get_initial_state(self):
         return np.array([
             [[WGO, WO, WOY],
              [WG, W, WY],
@@ -57,72 +59,51 @@ class Cube:
              [GRB, BR, BRY]]
         ])
 
-    def play(self, moves):
-        """
-        Args:
-            moves (list): move symbols
-        """
-        for i in moves:
-            eval(f"self.{i}()")
+    def step(self, action):
+        if action == "F":
+            self._state[0, :, :] = np.rot90(self._state[0, :, :], k=3)
 
-    def get_move_symbols(self):
-        return self.move_symbols
+        elif action == "F_":
+            self._state[0, :, :] = np.rot90(self._state[0, :, :], k=1)
 
-    def get_reverse_moves(self, moves):
-        """
-        Args:
-            moves (list): move symbols
-        Return:
-            list
-        """
-        ptn = {"F": "F_", "L": "L_", "R": "R_", "U": "U_", "D": "D_", "B": "B_", "F_": "F",
-               "L_": "L", "R_": "R", "U_": "U", "D_": "D", "B_": "B"}
-        lst = []
-        for i in moves[::-1]:
-            lst.append(ptn[i])
-        return lst
+        elif action == "L":
+            self._state[:, :, 0] = np.rot90(self._state[:, :, 0], k=3)
 
-    def F(self):
-        self.cube[0, :, :] = np.rot90(self.cube[0, :, :], k=3)
+        elif action == "L_":
+            self._state[:, :, 0] = np.rot90(self._state[:, :, 0], k=1)
 
-    def F_(self):
-        self.cube[0, :, :] = np.rot90(self.cube[0, :, :], k=1)
+        elif action == "R":
+            self._state[:, :, 2] = np.rot90(self._state[:, :, 2], k=1)
 
-    def L(self):
-        self.cube[:, :, 0] = np.rot90(self.cube[:, :, 0], k=3)
+        elif action == "R_":
+            self._state[:, :, 2] = np.rot90(self._state[:, :, 2], k=3)
 
-    def L_(self):
-        self.cube[:, :, 0] = np.rot90(self.cube[:, :, 0], k=1)
+        elif action == "U":
+            self._state[:, 0, :] = np.rot90(self._state[:, 0, :], k=3)
 
-    def R(self):
-        self.cube[:, :, 2] = np.rot90(self.cube[:, :, 2], k=1)
+        elif action == "U_":
+            self._state[:, 0, :] = np.rot90(self._state[:, 0, :], k=1)
 
-    def R_(self):
-        self.cube[:, :, 2] = np.rot90(self.cube[:, :, 2], k=3)
+        elif action == "D":
+            self._state[:, 2, :] = np.rot90(self._state[:, 2, :], k=3)
 
-    def U(self):
-        self.cube[:, 0, :] = np.rot90(self.cube[:, 0, :], k=3)
+        elif action == "D_":
+            self._state[:, 2, :] = np.rot90(self._state[:, 2, :], k=1)
 
-    def U_(self):
-        self.cube[:, 0, :] = np.rot90(self.cube[:, 0, :], k=1)
+        elif action == "B":
+            self._state[2, :, :] = np.rot90(self._state[2, :, :], k=1)
 
-    def D(self):
-        self.cube[:, 2, :] = np.rot90(self.cube[:, 2, :], k=3)
+        elif action == "B_":
+            self._state[2, :, :] = np.rot90(self._state[2, :, :], k=3)
 
-    def D_(self):
-        self.cube[:, 2, :] = np.rot90(self.cube[:, 2, :], k=1)
+        else:
+            raise Exception
 
-    def B(self):
-        self.cube[2, :, :] = np.rot90(self.cube[2, :, :], k=1)
-
-    def B_(self):
-        self.cube[2, :, :] = np.rot90(self.cube[2, :, :], k=3)
+    def is_origin(self):
+        return (self._state == self.get_initial_state()).all()
 
     def show_cube(self):
         lst = []
-        for i in self.cube.ravel():
+        for i in self._state.ravel():
             lst.append(COLORS[i])
         return np.array(lst).reshape(3, 3, 3)
-
-    def check_origin(self):
-        return (self.cube == self.get_initial_cube()).all()
