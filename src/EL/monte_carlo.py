@@ -129,10 +129,27 @@ class MonteCarloAgent(ELAgent):
 
         return a
 
+
+def _get_newest_qn_file(dir="data/"):
+    files = [i for i in Path(dir).iterdir()
+             if i.name.startswith("QN") and i.name.endswith(".pkl")]
+    if len(files) == 0:
+        return None
+    else:
+        dts = [datetime.datetime.strptime(i.name, "QN_%Y%m%d%H%M.pkl")
+               for i in files]
+        idx = dts.index(max(dts))
+
+        return str(files[idx])
+
+
 def train():
-    agent = MonteCarloAgent(epsilon=0.1, Q_file=None)
+    QN_file = _get_newest_qn_file()
+    print(f"{QN_file=}")
+    agent = MonteCarloAgent(epsilon=0.1)
     env = Environment()
-    agent.learn(env, n_episode=1_000_000, report_interval=500, Q_filedir=".")
+    agent.learn(env, n_theme=500, theme_steps=6, n_episode=2000,
+                QN_file=QN_file, report_interval=100)
     agent.show_reward_log()
 
 
