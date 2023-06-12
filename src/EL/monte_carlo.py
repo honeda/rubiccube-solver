@@ -57,10 +57,10 @@ class MonteCarloAgent(ELAgent):
             # "F"の後に"F_"のように戻す動作は入れない.
             theme_actions = [self.replace_wasted_work(i) for i in theme_actions]
 
-        for scramble_actions in theme_actions:
+        for i, scramble_actions in enumerate(theme_actions, 1):
             # Scramble
-            print("==================================")
-            print(f"Theme scene: {scramble_actions}")
+            print("==============================================================")
+            print(f"No.{i:0>4} Theme scene: {[ACTIONS[i] for i in scramble_actions]}")
             env.reset_to_origin()
             env.set_game_start_position(scramble_actions)
 
