@@ -1,109 +1,81 @@
 import numpy as np
 
-N = 0
-W = 1
-G = 2
-B = 3
-Y = 4
-O = 5  # noqa: E741
-R = 6
-WG = 7
-WO = 8
-WY = 9
-WR = 10
-GB = 11
-GO = 12
-GR = 13
-BO = 14
-BR = 15
-BY = 16
-YO = 17
-YR = 18
-WGO = 19
-WOY = 20
-WYR = 21
-WRG = 22
-GBO = 23
-GRB = 24
-BYO = 25
-BRY = 26
 
 COLORS = (
-    "N W G B Y O R WG WO WY WR GB GO GR BO BR BY YO "
-    "YR WGO WOY WYR WRG GBO GRB BYO BRY".split()
-)
+    WHITE,
+    GREEN,
+    ORANGE,
+    YELLOW,
+    RED,
+    BLUE
+) = list(range(6))
+
+SURFACES = (
+    TOP,
+    LEFT,
+    BACK,
+    RIGHT,
+    FRONT,
+    UNDER
+) = list(range(6))
+
+COLOR_CHARS = "WHITE GREEN ORANGE YELLOW RED BLUE".split()
+SURFACE_CHARS = "TOP LEFT BACK RIGHT FRONT UNDER".split()
 
 
 class Cube:
 
     def __init__(self):
-        self._state = self.get_initial_state()
+        self.state = self._get_initial_cube_arr()
 
     @property
-    def state(self):
-        return self._state
+    def is_solved(self):
+        return (self.state == self._get_initial_cube_arr()).all()
 
-    def reset(self):
-        self._state = self.get_initial_state()
+    @property
+    def is_home_pos(self):
+        """HOME POSITION
+            TOP  : WHITE
+            LEFT : GREEN
+            BACK : ORANGE
+            RIGHT: YELLOW
+            FRONT: RED
+            UNDER: BLUE
+        """
+        cur_w, cur_r = self.current_wr_pos
+        home_w, home_r = self.wr_pos_when_home_pos
 
-    def get_initial_state(self):
-        return np.array([
-            [[WGO, WO, WOY],
-             [WG, W, WY],
-             [WRG, WR, WYR]],
-            [[GO, O, YO],
-             [G, N, Y],
-             [GR, R, YR]],
-            [[GBO, BO, BYO],
-             [GB, B, BY],
-             [GRB, BR, BRY]]
-        ])
+        return (cur_w == home_w) and (cur_r == home_r)
 
-    def step(self, action):
-        if action == "F":
-            self._state[0, :, :] = np.rot90(self._state[0, :, :], k=3)
+    @property
+    def wr_pos_when_home_pos(self):
+        """index of white and red faces
+        when the cube in the home position
+        """
+        return TOP, FRONT
 
-        elif action == "F_":
-            self._state[0, :, :] = np.rot90(self._state[0, :, :], k=1)
+    @property
+    def current_wr_pos(self):
+        """Return index of white and red faces."""
+        center_blocks = self.state[:, 1, 1]
+        w = np.argwhere(center_blocks == WHITE)[0, 0]
+        r = np.argwhere(center_blocks == RED)[0, 0]
 
-        elif action == "L":
-            self._state[:, :, 0] = np.rot90(self._state[:, :, 0], k=3)
+        return w, r
 
-        elif action == "L_":
-            self._state[:, :, 0] = np.rot90(self._state[:, :, 0], k=1)
+    def __eq__(self, other):
+        return (self.state == other.state).all()
 
-        elif action == "R":
-            self._state[:, :, 2] = np.rot90(self._state[:, :, 2], k=1)
+    def __ne__(self, other):
+        return ~self.__eq__(other)
 
-        elif action == "R_":
-            self._state[:, :, 2] = np.rot90(self._state[:, :, 2], k=3)
+    def initialize_cube(self):
+        self.state = self._get_initial_cube_arr()
 
-        elif action == "U":
-            self._state[:, 0, :] = np.rot90(self._state[:, 0, :], k=3)
+    def _get_initial_cube_arr(self):
+        return np.array([np.full((3, 3), i) for i in COLORS])
 
-        elif action == "U_":
-            self._state[:, 0, :] = np.rot90(self._state[:, 0, :], k=1)
-
-        elif action == "D":
-            self._state[:, 2, :] = np.rot90(self._state[:, 2, :], k=3)
-
-        elif action == "D_":
-            self._state[:, 2, :] = np.rot90(self._state[:, 2, :], k=1)
-
-        elif action == "B":
-            self._state[2, :, :] = np.rot90(self._state[2, :, :], k=1)
-
-        elif action == "B_":
-            self._state[2, :, :] = np.rot90(self._state[2, :, :], k=3)
-
-        else:
-            raise Exception(action)
-
-    def is_origin(self):
-        return (self._state == self.get_initial_state()).all()
-
-    def show_cube(self):
-        lst = []
-        for i in self._state.ravel():
-            lst.append(COLORS[i])
-        return np.array(lst).reshape(3, 3, 3)
+    def copy(self):
+        copied = Cube()
+        copied.state = self.state.copy()
+        return copied
