@@ -5,7 +5,7 @@ from src.env.cube import Cube, COLOR_CHARS
 from src.env.action import rotate_to_home_pos, step
 
 
-def show_cube(cube: Cube, home_pos=False, ax=None, fig=None):
+def show_cube(cube: Cube, home_pos=False, ax=None, fig=None, save=""):
     """
     Args:
         cube (Cube):
@@ -13,6 +13,7 @@ def show_cube(cube: Cube, home_pos=False, ax=None, fig=None):
             Defaults to False.
         ax (Axes, optional): Axes for drawing. Defaults to None.
         fig (Figure, optional): Figure for drawing. Defaults to None.
+        save (str, optional): save file name. Defaults to "".
     """
     c = cube.copy()
     if home_pos:
@@ -44,8 +45,11 @@ def show_cube(cube: Cube, home_pos=False, ax=None, fig=None):
     if fig:
         fig.patch.set_facecolor("lavender")
 
-    if show_flag:
+    if show_flag and save == "":
         plt.show()
+    elif save != "":
+        plt.savefig(save)
+        plt.close()
     else:
         return ax
 

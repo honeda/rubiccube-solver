@@ -8,10 +8,9 @@ import numpy as np
 
 from src.EL.el_agent import ELAgent
 from src.env.action import int2str_actions, ACTION_CHARS
-# from src.env.cube import Cube
-# from src.utils.cube_util import (
-#     encode_state, decode_state, get_color_swap_states
-# )
+from src.env.cube import Cube
+from src.env.action import steps
+from src.utils.cube_util import show_cube
 
 # Remove X, Y, Z
 ACTION_CHARS = ACTION_CHARS[:-6]
@@ -40,8 +39,6 @@ class MonteCarloAgent(ELAgent):
                 a specific theme. ex) [["F", "B"], ["D", "F_", "B"].
                 `n_theme` and `theme_steps` are ignored when this argument
                 is not None. Defaults to None.
-            n_episode (int, optional): Num of episode per theme.
-                Defaults to 1000.
             gamma (float, optional): update weight for Q. Defaults to 0.9.
             report_interval (int, optional): Defaults to 100.
             Q_filedir (str, optional): Defaults to "data/".
@@ -73,6 +70,7 @@ class MonteCarloAgent(ELAgent):
             # Scramble
             print("==============================================================")
             print(f"No.{i:0>4} Theme scene: {int2str_actions(scramble_actions)}")
+            # self.save_theme_fig(scramble_actions, i)
             env.set_game_start_position(scramble_actions)
 
             for e in range(n_episode):
@@ -111,6 +109,14 @@ class MonteCarloAgent(ELAgent):
                     self.show_reward_log(episode=e)
 
         self.save_qn_file(self.Q, N, Q_filename, Q_filedir)
+
+    def save_theme_fig(self, scramble_actions, theme_num):
+        dummy_cube = Cube()
+        steps(dummy_cube, scramble_actions)
+
+        dir_ = "data/figure"
+        filename = f"/{theme_num:0>4}_{'-'.join(int2str_actions(scramble_actions))}.png"
+        show_cube(dummy_cube, save=dir_ + filename)
 
     # X, Y, Z を使わない場合、これはいらない
     # def update_qn_all_color_swap_states(self, Q, N, s):
