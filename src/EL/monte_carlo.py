@@ -9,13 +9,17 @@ import numpy as np
 from src.EL.el_agent import ELAgent
 from src.env import Environment
 from src.env.action import int2str_actions, ACTION_CHARS
-from src.env.cube import Cube
-from src.utils.cube_util import (
-    encode_state, decode_state, get_color_swap_states
-)
+# from src.env.cube import Cube
+# from src.utils.cube_util import (
+#     encode_state, decode_state, get_color_swap_states
+# )
 
+# Remove X, Y, Z
+ACTION_CHARS = ACTION_CHARS[:-6]
+ACTION_NUMS = list(range(len(ACTION_CHARS)))
 
 N_UNSCRAMBLE_STEP = 25
+
 
 class MonteCarloAgent(ELAgent):
 
@@ -44,10 +48,9 @@ class MonteCarloAgent(ELAgent):
         """
         # Prepare
         self.init_log()
-        action_nums = list(range(len(ACTION_CHARS)))
 
-        self.Q = defaultdict(lambda: [0] * len(action_nums))
-        N = defaultdict(lambda: [0] * len(action_nums))
+        self.Q = defaultdict(lambda: [0] * len(ACTION_NUMS))
+        N = defaultdict(lambda: [0] * len(ACTION_NUMS))
 
         if QN_file:
             Q, N_ = pickle.load(open(QN_file, "rb"))
@@ -59,7 +62,7 @@ class MonteCarloAgent(ELAgent):
             print(f"{len(self.Q)=}")
 
         if theme_actions is None:
-            theme_actions = [np.random.choice(action_nums, size=theme_steps)
+            theme_actions = [np.random.choice(ACTION_NUMS, size=theme_steps)
                              for _ in range(n_theme)]
             # "F"の後に"F_"のように戻す動作は入れない.
             theme_actions = [self.replace_wasted_work(i) for i in theme_actions]
@@ -80,7 +83,7 @@ class MonteCarloAgent(ELAgent):
                 experience = []
                 # while not done:
                 for _ in range(N_UNSCRAMBLE_STEP):
-                    a = self.policy(s, action_nums)
+                    a = self.policy(s, ACTION_NUMS)
                     n_state, reward, done = env.step(a)
                     experience.append({"state": s, "action": a, "reward": reward})
                     s = n_state
@@ -103,27 +106,25 @@ class MonteCarloAgent(ELAgent):
                     alpha = 1 / N[s][a]
                     self.Q[s][a] += alpha * (G - self.Q[s][a])
 
-                    self.Q, N = self.update_qn_all_color_swap_states(self.Q, N, s)
-
                 if e != 0 and e % report_interval == 0:
                     self.show_reward_log(episode=e)
 
         self.save_qn_file(self.Q, N, Q_filename, Q_filedir)
 
     # X, Y, Z を使わない場合、これはいらない
-    def update_qn_all_color_swap_states(self, Q, N, s):
-        q, n = Q[s], N[s]
+    # def update_qn_all_color_swap_states(self, Q, N, s):
+    #     q, n = Q[s], N[s]
 
-        cube = Cube()
-        cube.state = decode_state(s)
-        swapped_cubes = get_color_swap_states(cube)
-        swapped_states = [encode_state(i) for i in swapped_cubes]
+    #     cube = Cube()
+    #     cube.state = decode_state(s)
+    #     swapped_cubes = get_color_swap_states(cube)
+    #     swapped_states = [encode_state(i) for i in swapped_cubes]
 
-        for s_ in swapped_states:
-            Q[s_] = q
-            N[s_] = n
+    #     for s_ in swapped_states:
+    #         Q[s_] = q
+    #         N[s_] = n
 
-        return Q, N
+    #     return Q, N
 
     def save_qn_file(self, Q, N, Q_filename, Q_filedir):
         # Save Q & N

@@ -6,7 +6,7 @@ from src.env.cube import (
 )
 
 
-ACTION_CHARS = "X X_ Y Y_ Z Z_ F F_ U U_ R R_ D D_ B B_ L L_".split()
+ACTION_CHARS = "F F_ U U_ R R_ D D_ B B_ L L_ X X_ Y Y_ Z Z_".split()
 ACTION_FUNCS = [eval(f"ba.{i}") for i in ACTION_CHARS]
 
 

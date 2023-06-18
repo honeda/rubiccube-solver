@@ -11,12 +11,12 @@ class ELAgent():
 
     def policy(self, s, actions):
         if np.random.random() < self.epsilon:
-            return np.random.randint(len(actions))
+            return np.random.choice(actions, 1)[0]
         else:
             if s in self.Q and sum(self.Q[s]) != 0:
                 return np.argmax(self.Q[s])
             else:
-                return np.random.randint(len(actions))
+                return np.random.choice(actions, 1)[0]
 
     def init_log(self):
         self.reward_log = []
