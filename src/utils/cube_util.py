@@ -5,20 +5,25 @@ from src.env.cube import Cube, COLOR_CHARS
 from src.env.action import rotate_to_home_pos
 
 
-def show_cube(cube: Cube, home_pos=False):
+def show_cube(cube: Cube, home_pos=False, ax=None, fig=None):
     """
     Args:
         cube (Cube):
-        home_pos (bool, optional): if True, rotate to home position.
+        home_pos (bool, optional): If True, rotate to home position.
             Defaults to False.
+        ax (Axes, optional): Axes for drawing. Defaults to None.
+        fig (Figure, optional): Figure for drawing. Defaults to None.
     """
     c = cube.copy()
     if home_pos:
         rotate_to_home_pos(c)
 
-    fig, ax = plt.subplots(figsize=(6, 4))
-    points = [[5, 5], [2, 5], [5, 8], [8, 5], [5, 2], [11, 5]]
+    show_flag = False
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(5, 4))
+        show_flag = True
 
+    points = [[5, 5], [2, 5], [5, 8], [8, 5], [5, 2], [11, 5]]
     for arr, (X, Y) in zip(c.state, points):
         arr = arr[::-1]  # 描画用に反転
         for i in range(3):
@@ -34,9 +39,15 @@ def show_cube(cube: Cube, home_pos=False):
 
     ax.set_xlim(0, 16)
     ax.set_ylim(1, 12)
+    ax.set_aspect(1.05)
     ax.axis("off")
-    fig.patch.set_facecolor("lavender")
-    plt.show()
+    if fig:
+        fig.patch.set_facecolor("lavender")
+
+    if show_flag:
+        plt.show()
+    else:
+        return ax
 
 
 def encode_state(cube: Cube):
