@@ -125,6 +125,18 @@ def Z_(cube: Cube):
         a(cube)
 
 
+def U(cube: Cube):
+    actions = [X_, F, X]
+    for a in actions:
+        a(cube)
+
+
+def U_(cube: Cube):
+    actions = [X_, F_, X]
+    for a in actions:
+        a(cube)
+
+
 def R(cube: Cube):
     actions = [Y, F, Y_]
     for a in actions:
@@ -133,5 +145,41 @@ def R(cube: Cube):
 
 def R_(cube: Cube):
     actions = [Y, F_, Y_]
+    for a in actions:
+        a(cube)
+
+
+def D(cube: Cube):
+    actions = [X, F, X_]
+    for a in actions:
+        a(cube)
+
+
+def D_(cube: Cube):
+    actions = [X, F_, X_]
+    for a in actions:
+        a(cube)
+
+
+def B(cube: Cube):
+    actions = [X, X, F, X_, X_]
+    for a in actions:
+        a(cube)
+
+
+def B_(cube: Cube):
+    actions = [X, X, F_, X_, X_]
+    for a in actions:
+        a(cube)
+
+
+def L(cube: Cube):
+    actions = [Y_, F, Y]
+    for a in actions:
+        a(cube)
+
+
+def L_(cube: Cube):
+    actions = [Y_, F_, Y]
     for a in actions:
         a(cube)
