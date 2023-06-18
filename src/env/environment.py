@@ -1,6 +1,6 @@
 from src.env.cube import Cube
-
-ACTIONS = "F F_ L L_ R R_ U U_ D D_ B B_".split()
+from src.env import action as ACTION
+from src.utils.cube_util import encode_state
 
 
 class Environment:
@@ -11,16 +11,11 @@ class Environment:
 
     @property
     def actions(self):
-        return ACTIONS
-
-    @property
-    def reverse_actions(self):
-        return {i: f"{i}_" if not i.endswith("_") else i[0] for i in self.actions}
+        return ACTION.ACTION_CHARS
 
     @property
     def states(self):
-        # return self.cube.state
-        return " ".join(self.cube.state.ravel().astype(str))
+        return encode_state(self.cube)
 
     def set_game_start_position(self, actions: list):
         """Scramble the cube from origin.
@@ -29,27 +24,24 @@ class Environment:
             actions (list): action list. ex) ["F", "D", "L"] or [0, 1, 4]
         """
         self.last_scramble_actions = actions
-        self.reset_to_origin()
-        for i in actions:
-            self.step(i)
+        self.reset_to_solved()
+        ACTION.steps(self.cube, actions)
 
     def get_unscramble_actions(self, scramble_actions: list):
-        """Return unscramble steps.
+        """Return solve steps.
 
         Args:
             scramble_actions (list):
         Return:
             list
         """
-        r_act = self.reverse_actions
-        return [r_act[i] for i in scramble_actions[::-1]]
+        return ACTION.get_reverse_actions(scramble_actions, return_type="int")
 
-    def reset(self):
-        """reset to game start"""
+    def reset_to_gamestart(self):
         self.set_game_start_position(self.last_scramble_actions)
 
-    def reset_to_origin(self):
-        self.cube.reset()
+    def reset_to_solved(self):
+        self.cube.initialize_cube()
 
     def step(self, action: int or str):
         """
@@ -60,25 +52,10 @@ class Environment:
             int : reward
             bool: is unscrambled
         """
-        if type(action) == str:
-            self.cube.step(action)
-        else:
-            self.cube.step(ACTIONS[int(action)])
+        ACTION.step(self.cube, action)
 
         return (
-            # HACK: もっといいstateのコピー、保存、比較方法
-            " ".join(self.cube.state.ravel().astype(str)),
-            int(self.cube.is_origin()),
-            self.cube.is_origin()
+            encode_state(self.cube),
+            int(self.cube.is_solved),
+            self.cube.is_solved
         )
-
-    def is_same_state(self, a, b):
-        """
-        Args:
-            a (np.ndarray): Cube.state
-            b (np.ndarray): Cube.state
-
-        Returns:
-            bool
-        """
-        return (a == b).all()

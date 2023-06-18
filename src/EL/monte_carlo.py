@@ -4,11 +4,14 @@ import pickle
 from pathlib import Path
 from collections import defaultdict
 
-from src.EL.el_agent import ELAgent
-from src.env import Environment, ACTIONS
-
 import numpy as np
 
+from src.EL.el_agent import ELAgent
+from src.env import Environment
+from src.env.action import int2str_actions, ACTION_CHARS
+
+
+N_UNSCRAMBLE_STEP = 25
 
 class MonteCarloAgent(ELAgent):
 
@@ -35,11 +38,13 @@ class MonteCarloAgent(ELAgent):
             Q_filedir (str, optional): Defaults to "data/".
             Q_filename (_type_, optional): Defaults to None.
         """
+        # Prepare
         self.init_log()
-        action_nums = list(range(len(ACTIONS)))
+        action_nums = list(range(len(ACTION_CHARS)))
 
         self.Q = defaultdict(lambda: [0] * len(action_nums))
         N = defaultdict(lambda: [0] * len(action_nums))
+
         if QN_file:
             Q, N_ = pickle.load(open(QN_file, "rb"))
             # dict -> defaultdict
@@ -49,30 +54,28 @@ class MonteCarloAgent(ELAgent):
                 N[k] = v
             print(f"{len(self.Q)=}")
 
-        n_unscrable_step = 25
-
         if theme_actions is None:
             theme_actions = [np.random.choice(action_nums, size=theme_steps)
                              for _ in range(n_theme)]
             # "F"の後に"F_"のように戻す動作は入れない.
             theme_actions = [self.replace_wasted_work(i) for i in theme_actions]
 
+        # Learning
         for i, scramble_actions in enumerate(theme_actions, 1):
             # Scramble
             print("==============================================================")
-            print(f"No.{i:0>4} Theme scene: {[ACTIONS[i] for i in scramble_actions]}")
-            env.reset_to_origin()
+            print(f"No.{i:0>4} Theme scene: {int2str_actions(scramble_actions)}")
             env.set_game_start_position(scramble_actions)
 
             for e in range(n_episode):
 
-                env.reset()
+                env.reset_to_gamestart()
                 s = env.states
                 done = False
                 # Play until the end of episode.
                 experience = []
                 # while not done:
-                for _ in range(n_unscrable_step):
+                for _ in range(N_UNSCRAMBLE_STEP):
                     a = self.policy(s, action_nums)
                     n_state, reward, done = env.step(a)
                     experience.append({"state": s, "action": a, "reward": reward})
@@ -99,6 +102,9 @@ class MonteCarloAgent(ELAgent):
                 if e != 0 and e % report_interval == 0:
                     self.show_reward_log(episode=e)
 
+        self.save_qn_file(self.Q, N, Q_filename, Q_filedir)
+
+    def save_qn_file(self, Q, N, Q_filename, Q_filedir):
         # Save Q & N
         dt = datetime.datetime.now()
         filename = ("QN_{}.pkl".format(dt.strftime("%Y%m%d%H%M"))
@@ -108,7 +114,8 @@ class MonteCarloAgent(ELAgent):
             print(f"{len(self.Q)=}, {len(dict(self.Q))=}")
 
     def replace_wasted_work(self, actions: np.ndarray):
-        """
+        """`F`のあとに`F_`のような無駄な動きをなくす.
+
         Args:
             actions (np.ndarray):
         Return:
@@ -148,7 +155,7 @@ def train():
     print(f"{QN_file=}")
     agent = MonteCarloAgent(epsilon=0.1)
     env = Environment()
-    agent.learn(env, n_theme=500, theme_steps=6, n_episode=2000,
+    agent.learn(env, n_theme=1000, theme_steps=3, n_episode=1000,
                 QN_file=QN_file, report_interval=100)
     agent.show_reward_log()
 
