@@ -7,7 +7,6 @@ from collections import defaultdict
 import numpy as np
 
 from src.EL.el_agent import ELAgent
-from src.env import Environment
 from src.env.action import int2str_actions, ACTION_CHARS
 # from src.env.cube import Cube
 # from src.utils.cube_util import (
@@ -159,7 +158,7 @@ class MonteCarloAgent(ELAgent):
         return a
 
 
-def _get_newest_qn_file(dir="data/"):
+def get_newest_qn_file(dir="data/"):
     files = [i for i in Path(dir).iterdir()
              if i.name.startswith("QN") and i.name.endswith(".pkl")]
     if len(files) == 0:
@@ -170,17 +169,3 @@ def _get_newest_qn_file(dir="data/"):
         idx = dts.index(max(dts))
 
         return str(files[idx])
-
-
-def train():
-    QN_file = _get_newest_qn_file()
-    print(f"{QN_file=}")
-    agent = MonteCarloAgent(epsilon=0.1)
-    env = Environment()
-    agent.learn(env, n_theme=1000, theme_steps=3, n_episode=1000,
-                QN_file=QN_file, report_interval=100)
-    agent.show_reward_log()
-
-
-if __name__ == "__main__":
-    train()
