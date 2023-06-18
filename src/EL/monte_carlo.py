@@ -9,6 +9,10 @@ import numpy as np
 from src.EL.el_agent import ELAgent
 from src.env import Environment
 from src.env.action import int2str_actions, ACTION_CHARS
+from src.env.cube import Cube
+from src.utils.cube_util import (
+    encode_state, decode_state, get_color_swap_states
+)
 
 
 N_UNSCRAMBLE_STEP = 25
@@ -99,10 +103,27 @@ class MonteCarloAgent(ELAgent):
                     alpha = 1 / N[s][a]
                     self.Q[s][a] += alpha * (G - self.Q[s][a])
 
+                    self.Q, N = self.update_qn_all_color_swap_states(self.Q, N, s)
+
                 if e != 0 and e % report_interval == 0:
                     self.show_reward_log(episode=e)
 
         self.save_qn_file(self.Q, N, Q_filename, Q_filedir)
+
+    # X, Y, Z を使わない場合、これはいらない
+    def update_qn_all_color_swap_states(self, Q, N, s):
+        q, n = Q[s], N[s]
+
+        cube = Cube()
+        cube.state = decode_state(s)
+        swapped_cubes = get_color_swap_states(cube)
+        swapped_states = [encode_state(i) for i in swapped_cubes]
+
+        for s_ in swapped_states:
+            Q[s_] = q
+            N[s_] = n
+
+        return Q, N
 
     def save_qn_file(self, Q, N, Q_filename, Q_filedir):
         # Save Q & N
