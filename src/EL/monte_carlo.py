@@ -26,14 +26,14 @@ class MonteCarloAgent(ELAgent):
     def __init__(self, epsilon=0.1):
         super().__init__(epsilon)
 
-    def learn(self, env, QN_file=None, n_theme=50, theme_steps=3, theme_actions=None,
+    def learn(self, env, QN_file=None, n_theme=50, n_theme_steps=3, theme_actions=None,
               n_episode=1000, gamma=0.9, report_interval=100, Q_filedir="data/", Q_filename=None):
         """
         Args:
             env (Environment):
             QN_file (str, optional): Q file path. Defaults to None.
             n_theme (int, optional): Num of theme. Defaults to 50.
-            theme_steps (int, optional): Num of step each theme.
+            n_theme_steps (int, optional): Num of step each theme.
                 Defaults to 3.
             theme_actions (list, optional): Use when you want to give
                 a specific theme. ex) [["F", "B"], ["D", "F_", "B"].
@@ -62,7 +62,7 @@ class MonteCarloAgent(ELAgent):
             print(f"{len(self.Q)=}")
 
         if theme_actions is None:
-            theme_actions = [np.random.choice(ACTION_NUMS, size=theme_steps)
+            theme_actions = [np.random.choice(ACTION_NUMS, size=n_theme_steps)
                              for _ in range(n_theme)]
             # "F"の後に"F_"のように戻す動作は入れない.
             theme_actions = [self.replace_wasted_work(i) for i in theme_actions]
