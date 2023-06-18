@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from src.env.cube import Cube, COLOR_CHARS
-from src.env.action import rotate_to_home_pos
+from src.env.action import rotate_to_home_pos, step
 
 
 def show_cube(cube: Cube, home_pos=False, ax=None, fig=None):
@@ -48,6 +48,47 @@ def show_cube(cube: Cube, home_pos=False, ax=None, fig=None):
         plt.show()
     else:
         return ax
+
+
+def get_color_swap_states(cube: Cube):
+    """Return all color-swapped states from the current state.
+
+    1つの状態を学んだときに、色だけ入れ替わった同じ状態も学習するために使う.
+    """
+
+    def get_all_color_pattern():
+        """X, Y, Z を使って、現状含めすべての色の位置関係を取得する"""
+        ptn = []
+        actions = [
+            "Y", "Y", "Y",        # WHITE TOP  : ホームポジションから見た場合
+            "X", "Y", "Y", "Y",   # GREEN TOP
+            "X", "Y", "Y", "Y",   # ORANGE TOP
+            "Z_", "Y", "Y", "Y",  # YELLOW TOP
+            "Z", "Y", "Y", "Y",   # BLUE TOP
+            "Z", "Y", "Y", "Y",   # RED TOP
+        ]
+        c = Cube()
+        ptn.append(c.state[:, 1, 1])
+        for a in actions:
+            step(c, a)
+            ptn.append(c.state[:, 1, 1])
+
+        return ptn
+
+    cubes = []
+    idxs = [np.argwhere(cube.state == i) for i in range(6)]
+    for ptn in get_all_color_pattern():
+        arr = cube.state.copy()
+        for idx, color in zip(idxs, ptn):
+            for x, y, z in idx:
+                arr[x, y, z] = color
+
+        c = Cube()
+        c.state = arr
+        if not cube == c:  # 現在と同じものは含まない
+            cubes.append(c)
+
+    return cubes
 
 
 def encode_state(cube: Cube):
