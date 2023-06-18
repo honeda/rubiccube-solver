@@ -7,14 +7,16 @@ from src.env.cube import (
 
 
 ACTION_CHARS = "X X_ Y Y_ Z Z_ F F_ U U_ R R_ D D_ B B_ L L_".split()
+ACTION_FUNCS = [eval(f"ba.{i}") for i in ACTION_CHARS]
 
 
 def step_by_str(cube: Cube, action_str):
-    eval(f"ba.{action_str}")(cube)
+    idx = ACTION_CHARS.index(action_str)
+    ACTION_FUNCS[idx](cube)
 
 
 def step_by_int(cube: Cube, action_int):
-    eval(f"ba.{ACTION_CHARS[action_int]}")(cube)
+    ACTION_FUNCS[action_int](cube)
 
 
 def step(cube: Cube, action):
@@ -22,7 +24,7 @@ def step(cube: Cube, action):
     # if type(action) == str:
     try:
         step_by_str(cube, action)
-    except SyntaxError:
+    except ValueError:
         step_by_int(cube, action)
 
 
