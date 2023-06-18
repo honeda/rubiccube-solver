@@ -17,16 +17,15 @@ from src.env.action import int2str_actions, ACTION_CHARS
 ACTION_CHARS = ACTION_CHARS[:-6]
 ACTION_NUMS = list(range(len(ACTION_CHARS)))
 
-N_UNSCRAMBLE_STEP = 25
-
 
 class MonteCarloAgent(ELAgent):
 
     def __init__(self, epsilon=0.1):
         super().__init__(epsilon)
 
-    def learn(self, env, QN_file=None, n_theme=50, n_theme_steps=3, theme_actions=None,
-              n_episode=1000, gamma=0.9, report_interval=100, Q_filedir="data/", Q_filename=None):
+    def learn(self, env, QN_file=None, n_theme=50, n_theme_steps=3, n_unscramble_step=20,
+              n_episode=1000, theme_actions=None, gamma=0.9, report_interval=100,
+              Q_filedir="data/", Q_filename=None):
         """
         Args:
             env (Environment):
@@ -34,6 +33,9 @@ class MonteCarloAgent(ELAgent):
             n_theme (int, optional): Num of theme. Defaults to 50.
             n_theme_steps (int, optional): Num of step each theme.
                 Defaults to 3.
+            n_unscramble_step (int, optional): Num of unscramble step.
+            n_episode (int, optional): Num of episode per theme.
+                Defaults to 1000.
             theme_actions (list, optional): Use when you want to give
                 a specific theme. ex) [["F", "B"], ["D", "F_", "B"].
                 `n_theme` and `theme_steps` are ignored when this argument
@@ -81,7 +83,7 @@ class MonteCarloAgent(ELAgent):
                 # Play until the end of episode.
                 experience = []
                 # while not done:
-                for _ in range(N_UNSCRAMBLE_STEP):
+                for _ in range(n_unscramble_step):
                     a = self.policy(s, ACTION_NUMS)
                     n_state, reward, done = env.step(a)
                     experience.append({"state": s, "action": a, "reward": reward})

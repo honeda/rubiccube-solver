@@ -9,6 +9,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--QN_file", default=None)
     parser.add_argument("--n_theme_steps", default=3, type=int)
+    parser.add_argument("--n_unscramble_steps", default=20, type=int)
     parser.add_argument("--n_theme", default=50, type=int)
     parser.add_argument("--n_episode", default=1000, type=int)
     parser.add_argument("--report_interval", default=100, type=int)
@@ -27,6 +28,7 @@ if __name__ == "__main__":
         env,
         n_theme_steps=args.n_theme_steps,
         n_theme=args.n_theme,
+        n_unscramble_step=args.n_unscramble_step,
         n_episode=args.n_episode,
         QN_file=QN_file,
         report_interval=args.report_interval,
