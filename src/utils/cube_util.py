@@ -51,13 +51,10 @@ def show_cube(cube: Cube, home_pos=False, ax=None, fig=None):
 
 
 def encode_state(cube: Cube):
-    """キューブの状態を表す数値(int)に変換する.
+    """Convert to integer representing the current state.
 
     キューブの状態(cube.state)は`np.ndarray`だがこのままでは保存容量が大きいので`int`にする.
     なお、cube.state配列が`0`始まりのときのために先頭にダミーの1をつけている.
-
-    Args:
-        cube (Cube):
     """
     txt = str(cube.state.ravel()).replace("\n", "").replace(" ", "")[1: -1]
 
