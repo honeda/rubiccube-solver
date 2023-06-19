@@ -8,7 +8,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--QN_file", default=None)
-    parser.add_argument("--n_theme_steps", default=3, type=int)
+    parser.add_argument("--n_theme_step", default=3, type=int)
     parser.add_argument("--n_unscramble_step", default=20, type=int)
     parser.add_argument("--n_theme", default=50, type=int)
     parser.add_argument("--n_episode", default=1000, type=int)
@@ -26,7 +26,7 @@ if __name__ == "__main__":
     env = Environment()
     agent.learn(
         env,
-        n_theme_steps=args.n_theme_steps,
+        n_theme_step=args.n_theme_step,
         n_theme=args.n_theme,
         n_unscramble_step=args.n_unscramble_step,
         n_episode=args.n_episode,
