@@ -116,8 +116,10 @@ class MonteCarloAgent(ELAgent):
         self.save_qn_file(self.Q, self.N, Q_filename, Q_filedir)
 
     def squeeze_qn(self, Q, N):
-        """Q, N ともに`Qのvalueの合計値が0、かつNのvalueの合計値が2以下`のkeyを削除して容量削減.
-        ~~ また、Qのvalue内数値は`np.float32`, Nのvalue内数値は`np.uint32`にする. ~~ 保留
+        """Q, N ともに`Qのvalueの合計値が0のkeyを削除して容量削減.
+
+        成功したことないstateの場合、最も試行回数の少ないアクションを選択するため
+        各アクションの試行回数に偏りはない. よってNのkeyも削除する.
 
         Return:
             dict: NOT defaultdict
@@ -128,13 +130,8 @@ class MonteCarloAgent(ELAgent):
         value_q = np.array(list(Q.values()))
         value_n = np.array(list(N.values()))
         sum_q = np.sum(value_q, axis=1)
-        sum_n = np.sum(value_n, axis=1)
 
-        mask = (sum_n > 2) | (sum_q != 0)
-
-        # これを使う場合はself.Q, Nの生成時の型も指定すること
-        # q = {k: np.float32(v) for k, v in zip(key_q[idx], value_q[idx])}
-        # n = {k: np.uint(v) for k, v in zip(key_n[idx], value_n[idx])}
+        mask = (sum_q != 0)
         q = dict(zip(key_q[mask], value_q[mask]))
         n = dict(zip(key_n[mask], value_n[mask]))
 
