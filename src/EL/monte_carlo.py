@@ -133,14 +133,42 @@ class MonteCarloAgent(ELAgent):
 
     #     return Q, N
 
+    def squeeze_qn(self, Q, N):
+        """Q, N ともに`Qのvalueの合計値が0、かつNのvalueの合計値が2以下`のkeyを削除して容量削減.
+        ~~ また、Qのvalue内数値は`np.float32`, Nのvalue内数値は`np.uint32`にする. ~~ 保留
+        """
+        key_q = np.array(list(Q.keys()))
+        key_n = np.array(list(N.keys()))
+        value_q = np.array(list(Q.values()))
+        value_n = np.array(list(N.values()))
+        sum_q = np.sum(value_q, axis=1)
+        sum_n = np.sum(value_n, axis=1)
+
+        idx = np.argwhere((sum_n > 2) | (sum_q != 0)).ravel()
+
+        # これを使う場合はself.Q, Nの生成時の型も指定すること
+        # q = {k: np.float32(v) for k, v in zip(key_q[idx], value_q[idx])}
+        # n = {k: np.uint(v) for k, v in zip(key_n[idx], value_n[idx])}
+        q = {k: v for k, v in zip(key_q[idx], value_q[idx])}
+        n = {k: v for k, v in zip(key_n[idx], value_n[idx])}
+
+        # check
+        for i, j in zip(q.keys(), n.keys()):
+            if i != j:
+                self.save_qn_file(Q, N, Q_filename=None, Q_filedir="data")
+                raise Exception("saved original Q and N.")
+
+        return q, n
+
     def save_qn_file(self, Q, N, Q_filename, Q_filedir):
         # Save Q & N
+        Q, N = self.squeeze_qn(Q, N)
         dt = datetime.datetime.now()
         filename = ("QN_{}.pkl".format(dt.strftime("%Y%m%d%H%M"))
                     if Q_filename is None else Q_filename)
         with open(Path(Q_filedir, filename), "wb") as f:
-            pickle.dump([dict(self.Q), dict(N)], f)
-            print(f"{len(self.Q)=}, {len(dict(self.Q))=}")
+            pickle.dump([dict(Q), dict(N)], f)
+            print(f"{len(Q)=}")
 
     def replace_wasted_work(self, actions: np.ndarray):
         """`F`のあとに`F_`のような無駄な動きをなくす.
