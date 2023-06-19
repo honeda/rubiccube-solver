@@ -119,7 +119,8 @@ class MonteCarloAgent(ELAgent):
         """Q, N ともに`Qのvalueの合計値が0のkeyを削除して容量削減.
 
         成功したことないstateの場合、一様分布からアクションを決めるため
-        各アクションの試行回数に偏りはない. よってNのkeyも削除する.
+        各アクションの試行回数に偏りはない.
+        よって成功したことのないstateの試行回数(N)を保存しておく必要はない.
 
         Return:
             dict: NOT defaultdict
