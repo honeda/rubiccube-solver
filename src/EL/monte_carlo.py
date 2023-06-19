@@ -118,7 +118,7 @@ class MonteCarloAgent(ELAgent):
     def squeeze_qn(self, Q, N):
         """Q, N ともに`Qのvalueの合計値が0のkeyを削除して容量削減.
 
-        成功したことないstateの場合、最も試行回数の少ないアクションを選択するため
+        成功したことないstateの場合、一様分布からアクションを決めるため
         各アクションの試行回数に偏りはない. よってNのkeyも削除する.
 
         Return:
