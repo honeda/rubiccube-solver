@@ -13,7 +13,6 @@ class ELAgent():
 
     def __init__(self, epsilon):
         self.Q = {}
-        self.N = {}
         self.epsilon = epsilon
         self.reward_log = []
 

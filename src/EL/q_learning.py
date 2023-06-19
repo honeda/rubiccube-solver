@@ -1,10 +1,25 @@
+import datetime
+import pickle
 from collections import defaultdict
+from pathlib import Path
 
 import numpy as np
 
 from src.EL.el_agent import ELAgent, ACTION_NUMS
-from src.EL.util import load_qn_file, save_qn_file
 from src.env.action import int2str_actions, replace_wasted_work
+
+
+def get_newest_q_file(dir_="data/EL/Q_learning"):
+    files = [i for i in Path(dir_).iterdir()
+             if i.name.startswith("Q") and i.name.endswith(".pkl")]
+    if len(files) == 0:
+        return None
+    else:
+        dts = [datetime.datetime.strptime(i.name, "Q_%Y%m%d%H%M.pkl")
+               for i in files]
+        idx = dts.index(max(dts))
+
+        return str(files[idx])
 
 
 class QLearningAgent(ELAgent):
@@ -12,13 +27,13 @@ class QLearningAgent(ELAgent):
     def __init__(self, epsilon=0.1):
         super().__init__(epsilon)
 
-    def learn(self, env, QN_file=None, n_theme=50, n_theme_step=3, n_unscramble_step=20,
+    def learn(self, env, Q_file=None, n_theme=50, n_theme_step=3, n_unscramble_step=20,
               n_episode=1000, theme_actions=None, gamma=0.9, learning_rate=0.1,
-              report_interval=100, Q_filedir="data/", Q_filename=None):
+              report_interval=100, Q_filedir="data/EL/Q_learning/", Q_filename=None):
         """
         Args:
             env (Environment):
-            QN_file (str, optional): Q file path. Defaults to None.
+            Q_file (str, optional): Q file path. Defaults to None.
             n_theme (int, optional): Num of theme. Defaults to 50.
             n_theme_step (int, optional): Num of step each theme.
                 Defaults to 3.
@@ -39,15 +54,13 @@ class QLearningAgent(ELAgent):
         # Prepare
         self.init_log()
 
-        if QN_file:
-            self.Q, self.N = load_qn_file(QN_file)
+        if Q_file:
+            self.Q = self.load_q_file(Q_file)
         else:
             self.Q = defaultdict(lambda: [0] * len(ACTION_NUMS))
-            self.N = defaultdict(lambda: [0] * len(ACTION_NUMS))
 
         if theme_actions is None:
             theme_actions = np.random.choice(ACTION_NUMS, size=(n_theme, n_theme_step))
-            print(theme_actions.shape)
             # "F"の後に"F_"のように戻す動作は入れない.
             theme_actions = [replace_wasted_work(i) for i in theme_actions]
 
@@ -93,4 +106,48 @@ class QLearningAgent(ELAgent):
                 if e != 0 and e % report_interval == 0:
                     self.show_reward_log(episode=e)
 
-        save_qn_file(self.Q, self.N, Q_filename, Q_filedir)
+        self.Q = self.squeeze_q(self.Q)
+        self.save_q_file(self.Q, Q_filename, Q_filedir)
+
+    def squeeze_q(self, Q):
+        """Qのvalueの合計値が0のkeyを削除して容量削減.
+
+        Return:
+            dict: NOT defaultdict
+        """
+        key_q = np.array(list(Q.keys()))
+        value_q = np.array(list(Q.values()))
+        sum_q = np.sum(value_q, axis=1)
+
+        mask = (sum_q != 0)
+        q = dict(zip(key_q[mask], value_q[mask]))
+
+        return q
+
+    def save_q_file(self, Q, Q_filename, Q_filedir):
+        # Save Q
+        dt = datetime.datetime.now()
+        filename = ("Q_{}.pkl".format(dt.strftime("%Y%m%d%H%M"))
+                    if Q_filename is None else Q_filename)
+        with open(Path(Q_filedir, filename), "wb") as f:
+            pickle.dump(dict(Q), f)
+            print(f"{len(Q)=}")
+
+    def load_q_file(self, file_path):
+        """
+        Args:
+            file_path (str): file path
+
+        Returns:
+            Q (defaultdict)
+            N (defaultdict)
+        """
+        Q = defaultdict(lambda: [0] * len(ACTION_NUMS))
+
+        Q_ = pickle.load(open(file_path, "rb"))
+        # dict -> defaultdict
+        for k, v in Q_.items():
+            Q[k] = v
+        print(f"{len(Q)=}")
+
+        return Q
