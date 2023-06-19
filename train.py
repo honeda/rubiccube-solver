@@ -1,7 +1,8 @@
 import argparse
 
 from src.env import Environment
-from src.EL.monte_carlo import MonteCarloAgent, get_newest_qn_file
+from src.EL.monte_carlo import MonteCarloAgent
+from src.EL.util import get_newest_qn_file
 
 
 if __name__ == "__main__":

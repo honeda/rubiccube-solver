@@ -1,20 +1,11 @@
-import datetime
 import math
-import pickle
-from pathlib import Path
 from collections import defaultdict
 
 import numpy as np
 
-from src.EL.el_agent import ELAgent
-from src.env.action import int2str_actions, ACTION_CHARS
-from src.env.cube import Cube
-from src.env.action import steps
-from src.utils.cube_util import show_cube
-
-# Remove X, Y, Z
-ACTION_CHARS = ACTION_CHARS[:-6]
-ACTION_NUMS = list(range(len(ACTION_CHARS)))
+from src.EL.el_agent import ELAgent, ACTION_NUMS
+from src.EL.util import load_qn_file, save_qn_file
+from src.env.action import int2str_actions, replace_wasted_work
 
 
 class MonteCarloAgent(ELAgent):
@@ -49,7 +40,7 @@ class MonteCarloAgent(ELAgent):
         self.init_log()
 
         if QN_file:
-            self.Q, self.N = self.load_qn_file(QN_file)
+            self.Q, self.N = load_qn_file(QN_file)
         else:
             self.Q = defaultdict(lambda: [0] * len(ACTION_NUMS))
             self.N = defaultdict(lambda: [0] * len(ACTION_NUMS))
@@ -58,7 +49,7 @@ class MonteCarloAgent(ELAgent):
             theme_actions = [np.random.choice(ACTION_NUMS, size=n_theme_step)
                              for _ in range(n_theme)]
             # "F"の後に"F_"のように戻す動作は入れない.
-            theme_actions = [self.replace_wasted_work(i) for i in theme_actions]
+            theme_actions = [replace_wasted_work(i) for i in theme_actions]
 
         # Learning
         for i, scramble_actions in enumerate(theme_actions, 1):
@@ -113,99 +104,7 @@ class MonteCarloAgent(ELAgent):
                 if e != 0 and e % report_interval == 0:
                     self.show_reward_log(episode=e)
 
-        self.save_qn_file(self.Q, self.N, Q_filename, Q_filedir)
-
-    def squeeze_qn(self, Q, N):
-        """Q, N ともに`Qのvalueの合計値が0のkeyを削除して容量削減.
-
-        成功したことないstateの場合、一様分布からアクションを決めるため
-        各アクションの試行回数に偏りはない(はず）.
-        よって成功したことのないstateの試行回数(N)を保存しておく必要はない.
-
-        Return:
-            dict: NOT defaultdict
-            dict: NOT defaultdict
-        """
-        key_q = np.array(list(Q.keys()))
-        key_n = np.array(list(N.keys()))
-        value_q = np.array(list(Q.values()))
-        value_n = np.array(list(N.values()))
-        sum_q = np.sum(value_q, axis=1)
-
-        mask = (sum_q != 0)
-        q = dict(zip(key_q[mask], value_q[mask]))
-        n = dict(zip(key_n[mask], value_n[mask]))
-
-        # check
-        for i, j in zip(q.keys(), n.keys()):
-            if i != j:
-                self.save_qn_file(Q, N, Q_filename=None, Q_filedir="data")
-                raise Exception("saved original Q and N.")
-
-        return q, n
-
-    def load_qn_file(self, file_path):
-        """
-        Args:
-            file_path (str): file path
-
-        Returns:
-            Q (defaultdict)
-            N (defaultdict)
-        """
-        Q = defaultdict(lambda: [0] * len(ACTION_NUMS))
-        N = defaultdict(lambda: [0] * len(ACTION_NUMS))
-
-        Q_, N_ = pickle.load(open(file_path, "rb"))
-        # dict -> defaultdict
-        for k, v in Q_.items():
-            Q[k] = v
-        for k, v in N_.items():
-            N[k] = v
-        print(f"{len(Q)=}, {len(N)=}")
-
-        return Q, N
-
-    def save_qn_file(self, Q, N, Q_filename, Q_filedir):
-        # Save Q & N
-        Q, N = self.squeeze_qn(Q, N)
-        dt = datetime.datetime.now()
-        filename = ("QN_{}.pkl".format(dt.strftime("%Y%m%d%H%M"))
-                    if Q_filename is None else Q_filename)
-        with open(Path(Q_filedir, filename), "wb") as f:
-            pickle.dump([dict(Q), dict(N)], f)
-            print(f"{len(Q)=}")
-
-    def replace_wasted_work(self, actions: np.ndarray):
-        """`F`のあとに`F_`のような無駄な動きをなくす.
-
-        Args:
-            actions (np.ndarray):
-        Return:
-            np.ndarray
-        """
-        a = actions.copy()
-        idx1, idx2 = [0], [0]
-        while not ((len(idx1) == 0) and (len(idx2) == 0)):
-            diff = np.diff(a, prepend=a[0])
-            # replace like "F F_" -> "F F"
-            idx1 = np.argwhere((diff == 1) & (a % 2 == 1)).ravel()
-            for i in idx1:
-                a[i] = a[i] - 1
-            # replace like "F_ F" -> "F_ F_"
-            idx2 = np.argwhere((diff == -1) & (a % 2 == 0)).ravel()
-            for i in idx2:
-                a[i] = a[i] + 1
-
-        return a
-
-    def save_theme_fig(self, scramble_actions, theme_num):
-        dummy_cube = Cube()
-        steps(dummy_cube, scramble_actions)
-
-        dir_ = "data/figure"
-        filename = f"/{theme_num:0>4}_{'-'.join(int2str_actions(scramble_actions))}.png"
-        show_cube(dummy_cube, save=dir_ + filename)
+        save_qn_file(self.Q, self.N, Q_filename, Q_filedir)
 
     # def calc_auto_gamma(self, n_theme_step):
     #     """手数`n_theme_step`を入れたとき0.05になる値を返す
@@ -239,15 +138,3 @@ class MonteCarloAgent(ELAgent):
     #         N[s_] = n
 
     #     return Q, N
-
-def get_newest_qn_file(dir="data/"):
-    files = [i for i in Path(dir).iterdir()
-             if i.name.startswith("QN") and i.name.endswith(".pkl")]
-    if len(files) == 0:
-        return None
-    else:
-        dts = [datetime.datetime.strptime(i.name, "QN_%Y%m%d%H%M.pkl")
-               for i in files]
-        idx = dts.index(max(dts))
-
-        return str(files[idx])

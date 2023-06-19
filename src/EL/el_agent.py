@@ -1,6 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+from src.env.action import ACTION_CHARS
+
+
+# Remove X, Y, Z
+ACTION_CHARS = ACTION_CHARS[:-6]
+ACTION_NUMS = list(range(len(ACTION_CHARS)))
+
 
 class ELAgent():
 

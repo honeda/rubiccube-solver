@@ -1,3 +1,5 @@
+import numpy as np
+
 from src.env import basic_action as ba  # noqa F401
 from src.env.cube import (
     Cube,
@@ -39,6 +41,30 @@ def str2int_actions(actions):
 
 def int2str_actions(actions):
     return [ACTION_CHARS[i] for i in actions]
+
+
+def replace_wasted_work(actions: np.ndarray):
+    """`F`のあとに`F_`のような無駄な動きをなくす.
+
+    Args:
+        actions (np.ndarray):
+    Return:
+        np.ndarray
+    """
+    a = actions.copy()
+    idx1, idx2 = [0], [0]
+    while not ((len(idx1) == 0) and (len(idx2) == 0)):
+        diff = np.diff(a, prepend=a[0])
+        # replace like "F F_" -> "F F"
+        idx1 = np.argwhere((diff == 1) & (a % 2 == 1)).ravel()
+        for i in idx1:
+            a[i] = a[i] - 1
+        # replace like "F_ F" -> "F_ F_"
+        idx2 = np.argwhere((diff == -1) & (a % 2 == 0)).ravel()
+        for i in idx2:
+            a[i] = a[i] + 1
+
+    return a
 
 
 def get_reverse_actions(actions, return_type="int"):
