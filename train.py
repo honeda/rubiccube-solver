@@ -13,7 +13,7 @@ if __name__ == "__main__":
     parser.add_argument("--n_theme", default=50, type=int)
     parser.add_argument("--n_episode", default=1000, type=int)
     parser.add_argument("--report_interval", default=100, type=int)
-    parser.add_argument("--gamma", default=0.9, type=float)
+    parser.add_argument("--gamma", default=0.87, type=float)
     parser.add_argument("--epsilon", default=0.1, type=float)
 
     args = parser.parse_args()
