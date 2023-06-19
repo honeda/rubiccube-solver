@@ -46,8 +46,7 @@ class MonteCarloAgent(ELAgent):
             self.N = defaultdict(lambda: [0] * len(ACTION_NUMS))
 
         if theme_actions is None:
-            theme_actions = [np.random.choice(ACTION_NUMS, size=n_theme_step)
-                             for _ in range(n_theme)]
+            theme_actions = np.random.choice(ACTION_NUMS, size=(n_theme_step, n_theme))
             # "F"の後に"F_"のように戻す動作は入れない.
             theme_actions = [replace_wasted_work(i) for i in theme_actions]
 
