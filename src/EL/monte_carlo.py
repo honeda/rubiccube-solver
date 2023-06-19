@@ -73,7 +73,13 @@ class MonteCarloAgent(ELAgent):
             # self.save_theme_fig(scramble_actions, i)
             env.set_game_start_position(scramble_actions)
 
-            for e in range(n_episode):
+            done_th = n_episode / 5  # この回数完成させないと次のthemeにいかない
+            e_max = n_episode * 5  # done_thに達していなくてもこのエピソード数で次へ
+            n_done = 0
+            e = 0
+            # for e in range(n_episode):
+            while (n_done < done_th) or (e < n_episode):
+                e += 1
 
                 env.reset_to_gamestart()
                 s = env.states
@@ -87,7 +93,11 @@ class MonteCarloAgent(ELAgent):
                     experience.append({"state": s, "action": a, "reward": reward})
                     s = n_state
                     if done:
+                        n_done += 1
                         break
+
+                if e == e_max:
+                    break
 
                 self.log(reward)
 
