@@ -52,17 +52,11 @@ class MonteCarloAgent(ELAgent):
             gamma = self.calc_auto_gamma(n_theme_step)
             print(f"{gamma=:.3f}")
 
-        self.Q = defaultdict(lambda: [0] * len(ACTION_NUMS))
-        N = defaultdict(lambda: [0] * len(ACTION_NUMS))
-
         if QN_file:
-            Q, N_ = pickle.load(open(QN_file, "rb"))
-            # dict -> defaultdict
-            for k, v in Q.items():
-                self.Q[k] = v
-            for k, v in N_.items():
-                N[k] = v
-            print(f"{len(self.Q)=}")
+            self.Q, self.N = self.load_qn_file(QN_file)
+        else:
+            self.Q = defaultdict(lambda: [0] * len(ACTION_NUMS))
+            self.N = defaultdict(lambda: [0] * len(ACTION_NUMS))
 
         if theme_actions is None:
             theme_actions = [np.random.choice(ACTION_NUMS, size=n_theme_step)
@@ -116,14 +110,14 @@ class MonteCarloAgent(ELAgent):
                         G += math.pow(gamma, t) * experience[j]["reward"]
                         t += 1
 
-                    N[s][a] += 1  # count of s, a pair
-                    alpha = 1 / N[s][a]
+                    self.N[s][a] += 1  # count of s, a pair
+                    alpha = 1 / self.N[s][a]
                     self.Q[s][a] += alpha * (G - self.Q[s][a])
 
                 if e != 0 and e % report_interval == 0:
                     self.show_reward_log(episode=e)
 
-        self.save_qn_file(self.Q, N, Q_filename, Q_filedir)
+        self.save_qn_file(self.Q, self.N, Q_filename, Q_filedir)
 
     def calc_auto_gamma(self, n_theme_step):
         """手数`n_theme_step`を入れたとき0.05になる値を返す
@@ -143,7 +137,7 @@ class MonteCarloAgent(ELAgent):
         show_cube(dummy_cube, save=dir_ + filename)
 
     # X, Y, Z を使わない場合、これはいらない
-    # def update_qn_all_color_swap_states(self, Q, N, s):
+    # def update_qn_all_color_swap_states(self, Q, self.N, s):
     #     q, n = Q[s], N[s]
 
     #     cube = Cube()
@@ -187,6 +181,28 @@ class MonteCarloAgent(ELAgent):
                 raise Exception("saved original Q and N.")
 
         return q, n
+
+    def load_qn_file(self, file_path):
+        """
+        Args:
+            file_path (str): file path
+
+        Returns:
+            Q (defaultdict)
+            N (defaultdict)
+        """
+        Q = defaultdict(lambda: [0] * len(ACTION_NUMS))
+        N = defaultdict(lambda: [0] * len(ACTION_NUMS))
+
+        Q_, N_ = pickle.load(open(file_path, "rb"))
+        # dict -> defaultdict
+        for k, v in Q_.items():
+            Q[k] = v
+        for k, v in N_.items():
+            N[k] = v
+        print(f"{len(Q)=}, {len(N)=}")
+
+        return Q, N
 
     def save_qn_file(self, Q, N, Q_filename, Q_filedir):
         # Save Q & N
