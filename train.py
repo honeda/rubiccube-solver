@@ -13,7 +13,7 @@ if __name__ == "__main__":
     parser.add_argument("--n_theme", default=50, type=int)
     parser.add_argument("--n_episode", default=1000, type=int)
     parser.add_argument("--report_interval", default=100, type=int)
-    parser.add_argument("--gamma", default=0.87, type=float)
+    parser.add_argument("--gamma", default="auto", type=str)
     parser.add_argument("--epsilon", default=0.1, type=float)
 
     args = parser.parse_args()
@@ -32,6 +32,6 @@ if __name__ == "__main__":
         n_episode=args.n_episode,
         QN_file=QN_file,
         report_interval=args.report_interval,
-        gamma=args.gamma
+        gamma=args.gamma if args.gamma == "auto" else float(args.gamma)
     )
     agent.show_reward_log()

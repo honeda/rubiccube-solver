@@ -23,7 +23,7 @@ class MonteCarloAgent(ELAgent):
         super().__init__(epsilon)
 
     def learn(self, env, QN_file=None, n_theme=50, n_theme_step=3, n_unscramble_step=20,
-              n_episode=1000, theme_actions=None, gamma=0.9, report_interval=100,
+              n_episode=1000, theme_actions=None, gamma="auto", report_interval=100,
               Q_filedir="data/", Q_filename=None):
         """
         Args:
@@ -39,13 +39,18 @@ class MonteCarloAgent(ELAgent):
                 a specific theme. ex) [["F", "B"], ["D", "F_", "B"].
                 `n_theme` and `theme_steps` are ignored when this argument
                 is not None. Defaults to None.
-            gamma (float, optional): update weight for Q. Defaults to 0.9.
+            gamma (float or "auto", optional): update weight for Q.
+                Must be 0.0 ~ 1.0. Defaults to "auto".
             report_interval (int, optional): Defaults to 100.
             Q_filedir (str, optional): Defaults to "data/".
             Q_filename (_type_, optional): Defaults to None.
         """
         # Prepare
         self.init_log()
+
+        if gamma == "auto":
+            gamma = self.calc_auto_gamma(n_theme_step)
+            print(f"{gamma=:.3f}")
 
         self.Q = defaultdict(lambda: [0] * len(ACTION_NUMS))
         N = defaultdict(lambda: [0] * len(ACTION_NUMS))
@@ -119,6 +124,15 @@ class MonteCarloAgent(ELAgent):
                     self.show_reward_log(episode=e)
 
         self.save_qn_file(self.Q, N, Q_filename, Q_filedir)
+
+    def calc_auto_gamma(self, n_theme_step):
+        """手数`n_theme_step`を入れたとき0.05になる値を返す
+        手数が大きいほど1に近い値を返す. 最大手数は30を想定.
+        """
+        min_ = 0.05
+        gamma = min_ ** (1 / n_theme_step)
+
+        return gamma
 
     def save_theme_fig(self, scramble_actions, theme_num):
         dummy_cube = Cube()
