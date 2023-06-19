@@ -16,11 +16,6 @@ class ELAgent():
         else:
             if s in self.Q and sum(self.Q[s]) != 0:
                 return np.argmax(self.Q[s])
-            elif s in self.Q:
-                # 訪問回数の少ないアクションから選択
-                n = np.array(self.N[s])
-                idx = np.argwhere(n == n.min()).ravel()
-                return np.random.choice(idx)
             else:
                 return np.random.choice(actions, 1)[0]
 
