@@ -129,15 +129,6 @@ class QLearningAgent(ELAgent):
         self.deploy_q_to_swapped_state(appeared_states)
         self.save_q_file(self.Q, Q_filename, Q_filedir)
 
-    def calc_auto_gamma(self, n_theme_step):
-        """手数`n_theme_step`を入れたとき0.05になる値を返す
-        手数が大きいほど1に近い値を返す. 最大手数は30を想定.
-        """
-        min_ = 0.05
-        gamma = min_ ** (1 / n_theme_step)
-
-        return gamma
-
     def squeeze_q(self, Q):
         """Qのvalueの合計値が0のkeyを削除して容量削減.
 
