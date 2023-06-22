@@ -5,8 +5,10 @@ from pathlib import Path
 
 import numpy as np
 
-from src.EL.el_agent import ELAgent, ACTION_NUMS
+from src.EL.el_agent import ELAgent, ACTION_NUMS, ACTION_CHARS
+from src.env.cube import Cube
 from src.env.action import int2str_actions, replace_wasted_work
+from src.utils.cube_util import encode_state, decode_state, get_color_swap_states
 
 
 def get_newest_q_file(dir_="data/EL/Q_learning"):
@@ -65,6 +67,8 @@ class QLearningAgent(ELAgent):
             theme_actions = [replace_wasted_work(i) for i in theme_actions]
 
         # Learning
+        appeared_states = []
+        never_done_states = []
         for i, scramble_actions in enumerate(theme_actions, 1):
             # Scramble
             print("==============================================================")
@@ -73,7 +77,7 @@ class QLearningAgent(ELAgent):
 
             env.set_game_start_position(scramble_actions)
 
-            done_th = n_episode / 5  # この回数完成させないと次のthemeにいかない
+            done_th = n_episode / 2  # この回数完成させないと次のthemeにいかない
             e_max = n_episode * 5  # done_thに達していなくてもこのエピソード数で次へ
             n_done = 0
             e = 0
@@ -90,15 +94,27 @@ class QLearningAgent(ELAgent):
 
                     # monte-carloと同じく手数ペナルティはgammaによって適用される.
                     gain = reward + gamma * max(self.Q[n_state])  # Q[n_state]は移行先
+
+                    if done and max(self.Q[n_state]) > 0:
+                        print(reward)
+                        print(gain)
+                        print(self.Q[n_state])
+                        print(env.cube.state)
+                        raise Exception
+
                     estimated = self.Q[s][a]
                     self.Q[s][a] += learning_rate * (gain - estimated)
                     s = n_state
+                    if sum(self.Q[s]) == 0:
+                        appeared_states.append(s)
 
                     if done:
                         n_done += 1
                         break
 
                 if e == e_max:
+                    if n_done == 0:
+                        never_done_states.append(scramble_actions)
                     break
 
                 self.log(reward)
@@ -106,8 +122,21 @@ class QLearningAgent(ELAgent):
                 if e != 0 and e % report_interval == 0:
                     self.show_reward_log(episode=e)
 
+        print("Never done states:")
+        for s in never_done_states:
+            print(s)
         self.Q = self.squeeze_q(self.Q)
+        self.deploy_q_to_swapped_state(appeared_states)
         self.save_q_file(self.Q, Q_filename, Q_filedir)
+
+    def calc_auto_gamma(self, n_theme_step):
+        """手数`n_theme_step`を入れたとき0.05になる値を返す
+        手数が大きいほど1に近い値を返す. 最大手数は30を想定.
+        """
+        min_ = 0.05
+        gamma = min_ ** (1 / n_theme_step)
+
+        return gamma
 
     def squeeze_q(self, Q):
         """Qのvalueの合計値が0のkeyを削除して容量削減.
@@ -131,7 +160,7 @@ class QLearningAgent(ELAgent):
                     if Q_filename is None else Q_filename)
         with open(Path(Q_filedir, filename), "wb") as f:
             pickle.dump(dict(Q), f)
-            print(f"{len(Q)=}")
+            print(f"{len(Q)=:,}")
 
     def load_q_file(self, file_path):
         """
@@ -151,3 +180,40 @@ class QLearningAgent(ELAgent):
         print(f"{len(Q)=}")
 
         return Q
+
+    def deploy_q_to_swapped_state(self, states):
+        """色とアクションをスワップする技術を利用して、すでにQに保存されている局面の価値を
+        色をスワップした別の局面にも反映する.
+        局面の複雑具合によるが、1つの局面から最大25局面増やせる.
+        """
+        print("Deploy Q values to swapped states.")
+        count = 0
+        for state in states:
+            if state in self.Q:
+                values = self.Q[state]
+                state = decode_state(state)
+
+                if sum(values) != 0:
+                    values = dict(zip(ACTION_CHARS, values))
+                    cube = Cube()
+                    cube.state = state
+                    swapped_cubes, translated_action_dics = get_color_swap_states(cube)
+                    for sc, ta in zip(swapped_cubes, translated_action_dics):
+                        swapped_state = encode_state(sc)
+                        if swapped_state in self.Q:
+                            continue
+                        else:
+                            # アクションの入れ替え
+                            new_values = [0 for i in range(len(ACTION_CHARS))]
+                            for old_k, v in values.items():
+                                idx = ACTION_CHARS.index(ta[old_k])
+                                new_values[idx] = v
+
+                            self.Q[swapped_state] = new_values
+                            count += 1
+
+        print(f"Complete. Deployed {count:,} states.")
+        try:
+            print(f"LAST {swapped_state=}")
+        except Exception:
+            pass
