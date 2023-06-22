@@ -9,6 +9,7 @@ from src.env.cube import (
 
 
 ACTION_CHARS = "F F_ U U_ R R_ D D_ B B_ L L_ X X_ Y Y_ Z Z_".split()
+ACTION_NUMS = list(range(len(ACTION_CHARS)))
 ACTION_FUNCS = [eval(f"ba.{i}") for i in ACTION_CHARS]
 
 
@@ -92,24 +93,31 @@ def get_reverse_actions(actions, return_type="int"):
         raise Exception
 
 
-def rotate_to_home_pos(cube: Cube):
+def rotate_to_home_pos(cube: Cube, get_rotate_actions=False):
     """Rotate so that white is top face and red is front face.
     """
 
+    rotate_actions = []
     # White face to the top
     w_idx, _ = cube.current_wr_pos
     if w_idx != TOP:
         if w_idx == LEFT:
             step(cube, "Z")
+            rotate_actions.append("Z")
         elif w_idx == BACK:
             step(cube, "X_")
+            rotate_actions.append("X_")
         elif w_idx == RIGHT:
             step(cube, "Z_")
+            rotate_actions.append("Z_")
         elif w_idx == FRONT:
             step(cube, "X")
+            rotate_actions.append("X")
         elif w_idx == UNDER:
             step(cube, "X")
             step(cube, "X")
+            rotate_actions.append("X")
+            rotate_actions.append("X")
         else:
             raise Exception
 
@@ -118,10 +126,17 @@ def rotate_to_home_pos(cube: Cube):
     if r_idx != FRONT:
         if r_idx == LEFT:
             step(cube, "Y_")
+            rotate_actions.append("Y_")
         elif r_idx == BACK:
             step(cube, "Y")
             step(cube, "Y")
+            rotate_actions.append("Y")
+            rotate_actions.append("Y")
         elif r_idx == RIGHT:
             step(cube, "Y")
+            rotate_actions.append("Y")
         else:
             raise Exception(f"RED face is {SURFACE_CHARS[r_idx]}")
+
+    if get_rotate_actions:
+        return rotate_actions
