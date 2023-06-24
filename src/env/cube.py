@@ -58,8 +58,8 @@ class Cube:
     def current_wr_pos(self):
         """Return index of white and red faces."""
         center_blocks = self.state[:, 1, 1]
-        w = np.argwhere(center_blocks == WHITE)[0, 0]
-        r = np.argwhere(center_blocks == RED)[0, 0]
+        w = np.argmax(center_blocks == WHITE)
+        r = np.argmax(center_blocks == RED)
 
         return w, r
 
