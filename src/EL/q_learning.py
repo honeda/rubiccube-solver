@@ -5,9 +5,9 @@ from pathlib import Path
 
 import numpy as np
 
-from src.EL.el_agent import ELAgent, ACTION_NUMS, ACTION_CHARS
+from src.EL.el_agent import ELAgent
 from src.env.cube import Cube
-from src.env.action import int2str_actions, replace_wasted_work
+from src.env.action import int2str_actions, replace_wasted_work, ACTION_CHARS, ACTION_NUMS
 from src.utils.cube_util import encode_state, decode_state, get_color_swap_states
 
 

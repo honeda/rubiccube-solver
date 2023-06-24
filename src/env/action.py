@@ -8,13 +8,17 @@ from src.env.cube import (
 )
 
 
-ACTION_CHARS = "F F_ U U_ R R_ D D_ B B_ L L_ X X_ Y Y_ Z Z_".split()
+ACTION_CHARS = "F F_ U U_ R R_ D D_ B B_ L L_".split()
 ACTION_NUMS = list(range(len(ACTION_CHARS)))
-ACTION_FUNCS = [eval(f"ba.{i}") for i in ACTION_CHARS]
+
+ACTION_CHARS_WITH_ROTATE = ACTION_CHARS + "X X_ Y Y_ Z Z_".split()
+ACTION_NUMS_WITH_ROTATE = list(range(len(ACTION_CHARS_WITH_ROTATE)))
+
+ACTION_FUNCS = [eval(f"ba.{i}") for i in ACTION_CHARS_WITH_ROTATE]
 
 
 def step_by_str(cube: Cube, action_str):
-    idx = ACTION_CHARS.index(action_str)
+    idx = ACTION_CHARS_WITH_ROTATE.index(action_str)
     ACTION_FUNCS[idx](cube)
 
 
@@ -37,11 +41,11 @@ def steps(cube: Cube, actions):
 
 
 def str2int_actions(actions):
-    return [ACTION_CHARS.index(i) for i in actions]
+    return [ACTION_CHARS_WITH_ROTATE.index(i) for i in actions]
 
 
 def int2str_actions(actions):
-    return [ACTION_CHARS[i] for i in actions]
+    return [ACTION_CHARS_WITH_ROTATE[i] for i in actions]
 
 
 def replace_wasted_work(actions: np.ndarray):
