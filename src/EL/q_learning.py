@@ -105,7 +105,7 @@ class QLearningAgent(ELAgent):
                     estimated = self.Q[s][a]
                     self.Q[s][a] += learning_rate * (gain - estimated)
                     s = n_state
-                    if sum(self.Q[s]) == 0:
+                    if sum(self.Q[s]) == 0:  # defaultdictなので`s in self.Q`ではない
                         appeared_states.append(s)
 
                     if done:
@@ -125,6 +125,8 @@ class QLearningAgent(ELAgent):
         print("Never done states:")
         for s in never_done_states:
             print(s)
+        print(f"{n_theme=}, {len(never_done_states)=}"
+              f" ({(len(never_done_states) / n_theme) *100:.1f}%)")
         self.Q = self.squeeze_q(self.Q)
         self.deploy_q_to_swapped_state(appeared_states)
         self.save_q_file(self.Q, Q_filename, Q_filedir)
@@ -177,7 +179,7 @@ class QLearningAgent(ELAgent):
         色をスワップした別の局面にも反映する.
         局面の複雑具合によるが、1つの局面から最大25局面増やせる.
         """
-        print("Deploy Q values to swapped states.")
+        print(f"Deploy Q values to swapped states. {datetime.datetime.now()}")
         count = 0
         for state in states:
             if state in self.Q:
@@ -199,7 +201,7 @@ class QLearningAgent(ELAgent):
                             self.Q[swapped_state] = new_values
                             count += 1
 
-        print(f"Complete. Deployed {count:,} states.")
+        print(f"Complete. Deployed {count:,} states. {datetime.datetime.now()}")
         try:
             print(f"LAST {swapped_state=}")
         except Exception:
