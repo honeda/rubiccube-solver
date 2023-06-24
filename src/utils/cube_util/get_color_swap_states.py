@@ -19,7 +19,7 @@ def define_action_transitions():
         # i番目の要素はrotate_actionのi番目の要素と対応
         # rotateしたときの向きでのアクションとホームポジションでのアクションの対応関係
         {"F": "F", "U": "U", "R": "R", "D": "D", "B": "B", "L": "L"},  # 何もしてないとき
-        {"F": "R", "U": "U", "R": "B", "D": "D", "B": "L", "L": "F"},  # Yしたときの対応
+        {"F": "R", "U": "U", "R": "B", "D": "D", "B": "L", "L": "F"},  # YしたときのFはホームポジションのRになる.
         {"F": "B", "U": "U", "R": "L", "D": "D", "B": "F", "L": "R"},  # さらにYしたときの対応
         {"F": "L", "U": "U", "R": "F", "D": "D", "B": "R", "L": "B"},  # さらにY
         {"F": "D", "U": "L", "R": "F", "D": "R", "B": "U", "L": "B"},  # さらにX
@@ -50,11 +50,12 @@ def define_action_transitions():
 
     # 速度のためdictから変更後のアクションの番号listに変換する.
     # 変更前のアクションはリストのインデックスで分かる.
-    tmp = []
+    action_transitions_int = []
     for dic in action_transitions_str:
-        tmp.append([dic[i] for i in ACTION_CHARS])
-
-    action_transitions_int = [str2int_actions(i) for i in tmp]
+        tmp = [0 for _ in range(len(ACTION_CHARS))]
+        for k, v in dic.items():
+            tmp[ACTION_CHARS.index(v)] = ACTION_CHARS.index(k)
+        action_transitions_int.append(tmp)
 
     return action_transitions_int
 
