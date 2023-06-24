@@ -55,13 +55,26 @@ def define_action_transitions():
         tmp.append([dic[i] for i in ACTION_CHARS])
 
     action_transitions_int = [str2int_actions(i) for i in tmp]
-    for i in action_transitions_int:
-        print(i)
 
     return action_transitions_int
 
 
 ACTION_TRANSITIONS = define_action_transitions()
+
+
+def _get_all_color_pattern():
+    """X, Y, Z を使って、現状含めすべての色の位置関係を取得する"""
+    ptn = []
+    translated_actions = []
+
+    c = Cube()
+    for i, ra in enumerate(ROTATE_ACTIONS):
+        if ra != "":
+            step(c, ra)
+        ptn.append(c.state[:, 1, 1])
+        translated_actions.append(ACTION_TRANSITIONS[i])
+
+    return ptn, translated_actions
 
 
 def get_color_swap_states(cube: Cube, debug=False):
@@ -76,30 +89,13 @@ def get_color_swap_states(cube: Cube, debug=False):
         cubes (list): [Cube, Cube, ...]
         translated_actions: [dict, dict, ...]
     """
-
-    def get_all_color_pattern():
-        """X, Y, Z を使って、現状含めすべての色の位置関係を取得する"""
-        ptn = []
-        translated_actions = []
-
-        c = Cube()
-        for i, ra in enumerate(ROTATE_ACTIONS):
-            if ra != "":
-                step(c, ra)
-            ptn.append(c.state[:, 1, 1])
-            translated_actions.append(ACTION_TRANSITIONS[i])
-
-        return ptn, translated_actions
-
     cubes = []
     traslated_actions = []
     curr_color_masks = [cube.state == i for i in range(6)]
-    for ptn, trans_a in zip(*get_all_color_pattern()):
+    for ptn, trans_a in zip(*_get_all_color_pattern()):
         arr = cube.state.copy()
         for mask, color in zip(curr_color_masks, ptn):
             arr[mask] = color
-            # for x, y, z in idx:
-            #     arr[x, y, z] = color
 
         c = Cube()
         c.state = arr

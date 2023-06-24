@@ -7,7 +7,7 @@ import numpy as np
 
 from src.EL.el_agent import ELAgent
 from src.env.cube import Cube
-from src.env.action import int2str_actions, replace_wasted_work, ACTION_CHARS, ACTION_NUMS
+from src.env.action import int2str_actions, replace_wasted_work, ACTION_NUMS
 from src.utils.cube_util import encode_state, decode_state, get_color_swap_states
 
 
@@ -185,7 +185,6 @@ class QLearningAgent(ELAgent):
                 state = decode_state(state)
 
                 if sum(values) != 0:
-                    values = dict(zip(ACTION_CHARS, values))
                     cube = Cube()
                     cube.state = state
                     swapped_cubes, translated_action_dics = get_color_swap_states(cube)
@@ -195,10 +194,7 @@ class QLearningAgent(ELAgent):
                             continue
                         else:
                             # アクションの入れ替え
-                            new_values = [0 for i in range(len(ACTION_CHARS))]
-                            for old_k, v in values.items():
-                                idx = ACTION_CHARS.index(ta[old_k])
-                                new_values[idx] = v
+                            new_values = list(np.array(values)[ta])
 
                             self.Q[swapped_state] = new_values
                             count += 1
