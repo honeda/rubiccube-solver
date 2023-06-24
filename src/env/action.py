@@ -102,7 +102,7 @@ def rotate_to_home_pos(cube: Cube, get_rotate_actions=False):
     """
 
     # White face to the top
-    w_idx, _ = cube.current_wr_pos
+    w_idx, _ = cube.current_wg_pos
     if w_idx != TOP:
         if w_idx == LEFT:
             step(cube, "Z")
@@ -118,15 +118,15 @@ def rotate_to_home_pos(cube: Cube, get_rotate_actions=False):
         else:
             raise Exception
 
-    # Red face to the front
-    _, r_idx = cube.current_wr_pos
-    if r_idx != FRONT:
-        if r_idx == LEFT:
+    # Green face to the front
+    _, g_idx = cube.current_wg_pos
+    if g_idx != FRONT:
+        if g_idx == LEFT:
             step(cube, "Y_")
-        elif r_idx == BACK:
+        elif g_idx == BACK:
             step(cube, "Y")
             step(cube, "Y")
-        elif r_idx == RIGHT:
+        elif g_idx == RIGHT:
             step(cube, "Y")
         else:
-            raise Exception(f"RED face is {SURFACE_CHARS[r_idx]}")
+            raise Exception(f"Green face is {SURFACE_CHARS[g_idx]}")

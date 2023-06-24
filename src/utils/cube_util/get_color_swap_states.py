@@ -7,11 +7,11 @@ from src.env.action import rotate_to_home_pos, step, str2int_actions, ACTION_CHA
 ROTATE_ACTIONS = [
     # 全方向のキューブが取得できるよう回転させるためのアクション
     "", "Y", "Y", "Y",    # WHITE TOP  : ホームポジションから見た場合
-    "X", "Y", "Y", "Y",   # GREEN TOP
     "X", "Y", "Y", "Y",   # ORANGE TOP
-    "Z_", "Y", "Y", "Y",  # YELLOW TOP
-    "Z", "Y", "Y", "Y",   # BLUE TOP
-    "Z", "Y", "Y", "Y",   # RED TOP
+    "X", "Y", "Y", "Y",   # BLUE TOP
+    "Z_", "Y", "Y", "Y",  # RED TOP
+    "Z", "Y", "Y", "Y",   # YELLOW TOP
+    "Z", "Y", "Y", "Y",   # GREEN TOP
 ]
 
 def define_action_transitions():

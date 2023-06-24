@@ -3,11 +3,11 @@ import numpy as np
 
 COLORS = (
     WHITE,
-    GREEN,
     ORANGE,
-    YELLOW,
+    BLUE,
     RED,
-    BLUE
+    GREEN,
+    YELLOW
 ) = list(range(6))
 
 SURFACES = (
@@ -19,7 +19,7 @@ SURFACES = (
     UNDER
 ) = list(range(6))
 
-COLOR_CHARS = "WHITE GREEN ORANGE YELLOW RED BLUE".split()
+COLOR_CHARS = "WHITE ORANGE BLUE RED GREEN YELLOW".split()
 SURFACE_CHARS = "TOP LEFT BACK RIGHT FRONT UNDER".split()
 
 
@@ -36,32 +36,32 @@ class Cube:
     def is_home_pos(self):
         """HOME POSITION
             TOP  : WHITE
-            LEFT : GREEN
-            BACK : ORANGE
-            RIGHT: YELLOW
-            FRONT: RED
-            UNDER: BLUE
+            LEFT : ORANGE
+            BACK : BLUE
+            RIGHT: RED
+            FRONT: GREEN
+            UNDER: YELLOW
         """
-        cur_w, cur_r = self.current_wr_pos
-        home_w, home_r = self.wr_pos_when_home_pos
+        cur_w, cur_g = self.current_wg_pos
+        home_w, home_g = self.wg_pos_when_home_pos
 
-        return (cur_w == home_w) and (cur_r == home_r)
+        return (cur_w == home_w) and (cur_g == home_g)
 
     @property
-    def wr_pos_when_home_pos(self):
+    def wg_pos_when_home_pos(self):
         """index of white and red faces
         when the cube in the home position
         """
         return TOP, FRONT
 
     @property
-    def current_wr_pos(self):
+    def current_wg_pos(self):
         """Return index of white and red faces."""
         center_blocks = self.state[:, 1, 1]
         w = np.argmax(center_blocks == WHITE)
-        r = np.argmax(center_blocks == RED)
+        g = np.argmax(center_blocks == GREEN)
 
-        return w, r
+        return w, g
 
     def __eq__(self, other):
         return (self.state == other.state).all()

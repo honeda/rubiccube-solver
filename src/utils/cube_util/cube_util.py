@@ -25,6 +25,8 @@ def show_cube(cube: Cube, home_pos=False, ax=None, fig=None, save=""):
         show_flag = True
 
     points = [[5, 5], [2, 5], [5, 8], [8, 5], [5, 2], [11, 5]]
+    # これが世界基準だがアクションも変えないといけない
+    # points = [[5, 8], [2, 5], [11, 5], [8, 5], [5, 5], [5, 2]]
     for arr, (X, Y) in zip(c.state, points):
         arr = arr[::-1]  # 描画用に反転
         for i in range(3):
