@@ -16,6 +16,7 @@ matplotlib = "^3.7.1"
 [tool.poetry.group.dev.dependencies]
 jupyterlab-vim = "^0.16.0"
 jupyterlab = "^3.6.3"
+line-profiler = "^4.0.3"
 
 [build-system]
 requires = ["poetry-core"]
