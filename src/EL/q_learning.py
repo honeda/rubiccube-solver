@@ -77,6 +77,10 @@ class QLearningAgent(ELAgent):
 
             env.set_game_start_position(scramble_actions)
 
+            # スクランブルした状態が完成状態なら次へ
+            if env.cube.is_solved:
+                continue
+
             done_th = n_episode / 2  # この回数完成させないと次のthemeにいかない
             e_max = n_episode * 5  # done_thに達していなくてもこのエピソード数で次へ
             n_done = 0
