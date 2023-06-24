@@ -1,7 +1,7 @@
 import numpy as np
 
 from src.env.cube import Cube
-from src.env.action import rotate_to_home_pos, step, str2int_actions, ACTION_CHARS
+from src.env.action import rotate_to_home_pos, step, ACTION_CHARS
 
 
 ROTATE_ACTIONS = [
