@@ -6,8 +6,8 @@ from pathlib import Path
 
 import numpy as np
 
-from src.EL.el_agent import ELAgent, ACTION_NUMS
-from src.env.action import int2str_actions, replace_wasted_work
+from src.EL.el_agent import ELAgent
+from src.env.action import int2str_actions, replace_wasted_work, ACTION_NUMS
 
 
 def get_newest_qn_file(dir_="data/EL/monte_carlo"):

@@ -1,8 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from src.env.action import ACTION_CHARS, ACTION_NUMS
-
 
 class ELAgent():
 
