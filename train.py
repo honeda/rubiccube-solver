@@ -23,8 +23,6 @@ def monte_carlo(args):
         gamma=args.gamma
     )
 
-    agent.show_reward_log()
-
 
 def q_learning(args):
 
@@ -44,8 +42,6 @@ def q_learning(args):
         gamma=args.gamma,
         learning_rate=args.learning_rate
     )
-
-    agent.show_reward_log()
 
 
 if __name__ == "__main__":
