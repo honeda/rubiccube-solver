@@ -154,33 +154,33 @@ class QLearningAgent(ELAgent):
     def checkpoint(self, states, Q_filename, Q_filedir):
         """squeeze -> deploy -> save
         """
-        self.Q = self.squeeze_q(self.Q)
+        self.squeeze_q()
         self.deploy_q_to_swapped_state(states)
-        self.save_q_file(self.Q, Q_filename, Q_filedir)
+        self.save_q_file(Q_filename, Q_filedir)
 
-    def squeeze_q(self, Q):
+    def squeeze_q(self):
         """Qのvalueの合計値が0のkeyを削除して容量削減.
-
-        Return:
-            dict: NOT defaultdict
         """
-        key_q = np.array(list(Q.keys()))
-        value_q = np.array(list(Q.values()))
+        key_q = np.array(list(self.Q.keys()))
+        value_q = np.array(list(self.Q.values()))
         sum_q = np.sum(value_q, axis=1)
 
         mask = (sum_q != 0)
-        q = dict(zip(key_q[mask], value_q[mask]))
 
-        return q
+        dic = defaultdict(lambda: [0] * len(ACTION_NUMS))
+        for k, v in zip(key_q[mask], value_q[mask]):
+            dic[k] = v
 
-    def save_q_file(self, Q, Q_filename, Q_filedir):
+        self.Q = dic
+
+    def save_q_file(self, Q_filename, Q_filedir):
         # Save Q
         dt = datetime.datetime.now()
         filename = ("Q_{}.pkl".format(dt.strftime("%Y%m%d%H%M"))
                     if Q_filename is None else Q_filename)
         with open(Path(Q_filedir, filename), "wb") as f:
-            pickle.dump(dict(Q), f)
-        self.logger.info(f"Save Q file. {len(Q)=:,}")
+            pickle.dump(dict(self.Q), f)
+        self.logger.info(f"Save Q file. {len(self.Q)=:,}")
 
     def load_q_file(self, file_path):
         """
