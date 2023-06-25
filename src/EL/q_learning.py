@@ -31,7 +31,8 @@ class QLearningAgent(ELAgent):
 
     def learn(self, env, Q_file=None, n_theme=50, n_theme_step=3, n_unscramble_step=20,
               n_episode=1000, theme_actions=None, gamma=0.9, learning_rate=0.1,
-              report_interval=100, Q_filedir="data/EL/Q_learning/", Q_filename=None):
+              checkpoint_interval=100, report_interval=100,
+              Q_filedir="data/EL/Q_learning/", Q_filename=None):
         """
         Args:
             env (Environment):
@@ -49,6 +50,7 @@ class QLearningAgent(ELAgent):
             gamma (float, optional): update weight for Q. Must be 0.0 ~ 1.0.
                 Defaults to 0.9.
             learning_rate (float, optional): learning rate. Defaults to 0.1.
+            checkpoint_interval (int, optional): Defaults to 100.
             report_interval (int, optional): Defaults to 100.
             Q_filedir (str, optional): Defaults to "data/".
             Q_filename (_type_, optional): Defaults to None.
@@ -67,13 +69,13 @@ class QLearningAgent(ELAgent):
             theme_actions = [replace_wasted_work(i) for i in theme_actions]
 
         # Learning
-        self.logger.info("Start learning.")
+        self.logger.info(f"Start learning. {n_theme=}, {n_theme_step=}, {n_unscramble_step=}")
         appeared_states = []
         never_done_states = []
-        for i, scramble_actions in enumerate(theme_actions, 1):
+        for i, scramble_actions in enumerate(theme_actions):
             # Scramble
             print("==============================================================")
-            print(f"No.{i:0>4} Theme scene: {int2str_actions(scramble_actions)}")
+            print(f"No.{i + 1:0>4} Theme scene: {int2str_actions(scramble_actions)}")
             # self.save_theme_fig(scramble_actions, i)
 
             env.set_game_start_position(scramble_actions)
@@ -135,14 +137,25 @@ class QLearningAgent(ELAgent):
                 if e != 0 and e % report_interval == 0:
                     self.show_reward_log(interval=report_interval, episode=e)
 
+            if i != 0 and i % checkpoint_interval == 0:
+                self.info(f"Checkpoint, episode {e}")
+                self.checkpoint(appeared_states, Q_filename, Q_filedir)
+                appeared_states = []
+
         # Post process
         print("Never done states:")
         for s in never_done_states:
             print(s)
         self.logger.info(f"Finish. {n_theme=}, {len(never_done_states)=}"
                          f" ({(len(never_done_states) / n_theme) *100:.1f}%)")
+        self.checkpoint(appeared_states, Q_filename, Q_filedir)
+        print(np.sort(np.unique(appeared_states, return_counts=True)[1]))
+
+    def checkpoint(self, states, Q_filename, Q_filedir):
+        """squeeze -> deploy -> save
+        """
         self.Q = self.squeeze_q(self.Q)
-        self.deploy_q_to_swapped_state(appeared_states)
+        self.deploy_q_to_swapped_state(states)
         self.save_q_file(self.Q, Q_filename, Q_filedir)
 
     def squeeze_q(self, Q):
@@ -215,6 +228,8 @@ class QLearningAgent(ELAgent):
 
                             self.Q[swapped_state] = new_values
                             count += 1
+                else:
+                    print("yeah")
 
         self.logger.info(f"Complete. Deployed {count:,} states.")
         try:
