@@ -165,7 +165,7 @@ class QLearningAgent(ELAgent):
                     if Q_filename is None else Q_filename)
         with open(Path(Q_filedir, filename), "wb") as f:
             pickle.dump(dict(Q), f)
-            self.logger.info(f"{len(Q)=:,}")
+        self.logger.info(f"Save Q file. {len(Q)=:,}")
 
     def load_q_file(self, file_path):
         """
@@ -183,7 +183,7 @@ class QLearningAgent(ELAgent):
         for k, v in Q_.items():
             Q[k] = v
 
-        self.logger.info(f"{len(Q)=:,}")
+        self.logger.info(f"Load Q file. {len(Q)=:,}")
 
         return Q
 
