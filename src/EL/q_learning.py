@@ -67,6 +67,7 @@ class QLearningAgent(ELAgent):
             theme_actions = [replace_wasted_work(i) for i in theme_actions]
 
         # Learning
+        self.logger.info("Start learning.")
         appeared_states = []
         never_done_states = []
         for i, scramble_actions in enumerate(theme_actions, 1):
@@ -99,13 +100,6 @@ class QLearningAgent(ELAgent):
                     # monte-carloと同じく手数ペナルティはgammaによって適用される.
                     gain = reward + gamma * max(self.Q[n_state])  # Q[n_state]は移行先
 
-                    if done and max(self.Q[n_state]) > 0:
-                        print(reward)
-                        print(gain)
-                        print(self.Q[n_state])
-                        print(env.cube.state)
-                        raise Exception
-
                     estimated = self.Q[s][a]
                     self.Q[s][a] += learning_rate * (gain - estimated)
                     s = n_state
@@ -113,8 +107,14 @@ class QLearningAgent(ELAgent):
                         appeared_states.append(s)
 
                     if done:
-                        n_done += 1
-                        break
+                        if max(self.Q[n_state]) > 0:
+                            self.logger.error(
+                                f"{reward=}, {gain=}, {self.Q[n_state]=}, {env.cube.state=}"
+                            )
+                            raise Exception
+                        else:
+                            n_done += 1
+                            break
 
                 self.log(reward)
 
@@ -125,9 +125,7 @@ class QLearningAgent(ELAgent):
                         env.reset_to_gamestart()
                         state = encode_state(env.cube)
                         if sum(self.Q[state]) != 0:
-                            print(never_done_states)
-                            print(f"{state=}")
-                            print(f"{self.Q[state]=}")
+                            self.logger.error(f"{scramble_actions=}, {state=}, {self.Q[state]=}")
                             self.save_q_file(self.Q, "problem_Q.pkl", Q_filedir)
                             raise Exception("Maybe bug in the color swap logic.")
                     break
@@ -139,8 +137,8 @@ class QLearningAgent(ELAgent):
         print("Never done states:")
         for s in never_done_states:
             print(s)
-        print(f"{n_theme=}, {len(never_done_states)=}"
-              f" ({(len(never_done_states) / n_theme) *100:.1f}%)")
+        self.logger.info(f"Finish. {n_theme=}, {len(never_done_states)=}"
+                         f" ({(len(never_done_states) / n_theme) *100:.1f}%)")
         self.Q = self.squeeze_q(self.Q)
         self.deploy_q_to_swapped_state(appeared_states)
         self.save_q_file(self.Q, Q_filename, Q_filedir)
@@ -167,7 +165,7 @@ class QLearningAgent(ELAgent):
                     if Q_filename is None else Q_filename)
         with open(Path(Q_filedir, filename), "wb") as f:
             pickle.dump(dict(Q), f)
-            print(f"{len(Q)=:,}")
+            self.logger.info(f"{len(Q)=:,}")
 
     def load_q_file(self, file_path):
         """
@@ -184,7 +182,8 @@ class QLearningAgent(ELAgent):
         # dict -> defaultdict
         for k, v in Q_.items():
             Q[k] = v
-        print(f"{len(Q)=}")
+
+        self.logger.info(f"{len(Q)=:,}")
 
         return Q
 
@@ -193,7 +192,7 @@ class QLearningAgent(ELAgent):
         色をスワップした別の局面にも反映する.
         局面の複雑具合によるが、1つの局面から最大25局面増やせる.
         """
-        print(f"Deploy Q values to swapped states. {datetime.datetime.now()}")
+        self.logger.info("Deploy Q values to swapped states.")
         count = 0
         for state in states:
             if state in self.Q:
@@ -215,7 +214,7 @@ class QLearningAgent(ELAgent):
                             self.Q[swapped_state] = new_values
                             count += 1
 
-        print(f"Complete. Deployed {count:,} states. {datetime.datetime.now()}")
+        self.logger.info(f"Complete. Deployed {count:,} states.")
         try:
             print(f"LAST {swapped_state=}")
         except Exception:

@@ -1,5 +1,8 @@
 poetry.lock
 notebooks/
 data/*
+log/*
 *__pycache__
 .vscode/
+
+!log/.gitkeep

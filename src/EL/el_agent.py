@@ -1,3 +1,6 @@
+import json
+from logging import getLogger, config
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -8,6 +11,14 @@ class ELAgent():
         self.Q = {}
         self.epsilon = epsilon
         self.reward_log = []
+
+        # load logger
+        conf_file = "config/logger.json"
+        log_conf = json.load(open(conf_file))
+        log_conf["handlers"]["fileHandler"]["filename"] = f"log/{self.__class__.__name__}.log"
+
+        config.dictConfig(log_conf)
+        self.logger = getLogger("simpleLogger")
 
     def policy(self, s, actions):
         if np.random.random() < self.epsilon:
