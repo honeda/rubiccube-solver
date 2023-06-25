@@ -102,9 +102,11 @@ class QLearningAgent(ELAgent):
 
                     estimated = self.Q[s][a]
                     self.Q[s][a] += learning_rate * (gain - estimated)
-                    s = n_state
-                    if sum(self.Q[s]) == 0:  # defaultdictなので`s in self.Q`ではない
+                    # defaultdictなので`s in self.Q`ではない
+                    if (s not in appeared_states) and (sum(self.Q[s]) != 0):
                         appeared_states.append(s)
+
+                    s = n_state
 
                     if done:
                         if max(self.Q[n_state]) > 0:
