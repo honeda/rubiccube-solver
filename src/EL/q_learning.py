@@ -106,11 +106,11 @@ class QLearningAgent(ELAgent):
                     values = self.Q[s]
                     estimated = values[a]
                     self.Q[s][a] += learning_rate * (gain - estimated)
+                    s = n_state
+
                     # 要素数が増えると時間がかかるので (s not in appeared_states) はみないで後で処理.
                     if sum(values) != 0:
                         appeared_states.append(s)
-
-                    s = n_state
 
                     if done:
                         if max_next_state_value > 0:
