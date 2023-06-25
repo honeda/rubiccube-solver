@@ -72,10 +72,10 @@ class QLearningAgent(ELAgent):
         self.logger.info(f"Start learning. {n_theme=}, {n_theme_step=}, {n_unscramble_step=}")
         appeared_states = []
         never_done_states = []
-        for i, scramble_actions in enumerate(theme_actions):
+        for i, scramble_actions in enumerate(theme_actions, 1):
             # Scramble
             print("==============================================================")
-            print(f"No.{i + 1:0>4} Theme scene: {int2str_actions(scramble_actions)}")
+            print(f"No.{i:0>4} Theme scene: {int2str_actions(scramble_actions)}")
             # self.save_theme_fig(scramble_actions, i)
 
             env.set_game_start_position(scramble_actions)
@@ -102,10 +102,11 @@ class QLearningAgent(ELAgent):
                     # monte-carloと同じく手数ペナルティはgammaによって適用される.
                     gain = reward + gamma * max(self.Q[n_state])  # Q[n_state]は移行先
 
-                    estimated = self.Q[s][a]
+                    values = self.Q[s]
+                    estimated = values[a]
                     self.Q[s][a] += learning_rate * (gain - estimated)
                     # 要素数が増えると時間がかかるので (s not in appeared_states) はみない.
-                    if sum(self.Q[s]) != 0:  # defaultdictなので`s in self.Q`ではない
+                    if sum(values) != 0:
                         appeared_states.append(s)
 
                     s = n_state
@@ -138,7 +139,7 @@ class QLearningAgent(ELAgent):
                     self.show_reward_log(interval=report_interval, episode=e)
 
             if i != 0 and i % checkpoint_interval == 0:
-                self.info(f"Checkpoint, episode {e}")
+                self.logger.info(f"Checkpoint, episode {e}")
                 self.checkpoint(appeared_states, Q_filename, Q_filedir)
                 appeared_states = []
 
