@@ -76,7 +76,6 @@ class QLearningAgent(ELAgent):
             # Scramble
             print("==============================================================")
             print(f"No.{i:0>4} Theme scene: {int2str_actions(scramble_actions)}")
-            # self.save_theme_fig(scramble_actions, i)
 
             env.set_game_start_position(scramble_actions)
 
@@ -88,7 +87,6 @@ class QLearningAgent(ELAgent):
             e_max = n_episode * 5  # done_thに達していなくてもこのエピソード数で次へ
             n_done = 0
             e = 0
-            # for e in range(n_episode):
             while (n_done < done_th) or (e < n_episode):
                 e += 1
 
@@ -106,6 +104,7 @@ class QLearningAgent(ELAgent):
                     values = self.Q[s]
                     estimated = values[a]
                     self.Q[s][a] += learning_rate * (gain - estimated)
+                    # values += learning_rate * (gain - estimated)  # これでもOKなはず
                     s = n_state
 
                     # 要素数が増えると時間がかかるので (s not in appeared_states) はみないで後で処理.
