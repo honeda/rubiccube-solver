@@ -62,9 +62,10 @@ def encode_state(cube: Cube):
     キューブの状態(cube.state)は`np.ndarray`だがこのままでは保存容量が大きいので`int`にする.
     なお、cube.state配列が`0`始まりのときのために先頭にダミーの1をつけている.
     """
-    txt = str(cube.state.ravel()).replace("\n", "").replace(" ", "")[1: -1]
+    s = cube.state.ravel()
+    encoded = int("1" + "".join([str(i) for i in s]))
 
-    return int("1" + txt)
+    return encoded
 
 
 def decode_state(encoded: int):
