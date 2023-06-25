@@ -100,7 +100,8 @@ class QLearningAgent(ELAgent):
                     n_state, reward, done = env.step(a)
 
                     # monte-carloと同じく手数ペナルティはgammaによって適用される.
-                    gain = reward + gamma * max(self.Q[n_state])  # Q[n_state]は移行先
+                    max_next_state_value = max(self.Q[n_state])
+                    gain = reward + gamma * max_next_state_value
 
                     values = self.Q[s]
                     estimated = values[a]
@@ -112,7 +113,7 @@ class QLearningAgent(ELAgent):
                     s = n_state
 
                     if done:
-                        if max(self.Q[n_state]) > 0:
+                        if max_next_state_value > 0:
                             self.logger.error(
                                 f"{reward=}, {gain=}, {self.Q[n_state]=}, {env.cube.state=}"
                             )
