@@ -104,8 +104,8 @@ class QLearningAgent(ELAgent):
 
                     estimated = self.Q[s][a]
                     self.Q[s][a] += learning_rate * (gain - estimated)
-                    # defaultdictなので`s in self.Q`ではない
-                    if (s not in appeared_states) and (sum(self.Q[s]) != 0):
+                    # 要素数が増えると時間がかかるので (s not in appeared_states) はみない.
+                    if sum(self.Q[s]) != 0:  # defaultdictなので`s in self.Q`ではない
                         appeared_states.append(s)
 
                     s = n_state
@@ -208,7 +208,7 @@ class QLearningAgent(ELAgent):
         """
         self.logger.info("Deploy Q values to swapped states.")
         count = 0
-        for state in states:
+        for state in np.unique(states):
             if state in self.Q:
                 values = self.Q[state]
                 state = decode_state(state)
