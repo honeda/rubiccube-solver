@@ -4,6 +4,8 @@ from logging import getLogger, config
 import numpy as np
 import matplotlib.pyplot as plt
 
+# from src.env.action import ACTION_CHARS
+
 
 class ELAgent():
 
@@ -20,7 +22,7 @@ class ELAgent():
         config.dictConfig(log_conf)
         self.logger = getLogger("simpleLogger")
 
-    def policy(self, s, actions):
+    def policy_base(self, s, actions):
         if np.random.random() < self.epsilon:
             return np.random.choice(actions)
         else:
@@ -28,6 +30,30 @@ class ELAgent():
                 return np.argmax(self.Q[s])
             else:
                 return np.random.choice(actions)
+
+    def policy(self, s, prev_action, actions):
+
+        # 初手の場合
+        if prev_action is None:
+            return self.policy_base(s, actions)
+
+        # 初手でない場合
+        else:
+            if prev_action % 2 == 0:
+                kinjite = prev_action + 1  # Like F -> F_
+            else:
+                kinjite = prev_action - 1  # Like F_ -> F
+
+            a = int(kinjite)
+            count = 0
+            while a == kinjite:
+                count += 1
+                a = self.policy_base(s, actions)
+            # if count > 40:
+            #     self.logger.info(f"prev_action={ACTION_CHARS[prev_action]}, "
+            #                      f"{s=}, {dict(zip(ACTION_CHARS, self.Q[s]))}")
+
+            return a
 
     def init_log(self):
         self.reward_log = []

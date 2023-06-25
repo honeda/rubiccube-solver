@@ -91,10 +91,12 @@ class QLearningAgent(ELAgent):
                 e += 1
 
                 env.reset_to_gamestart()
+                prev_action = None
                 s = env.states
                 done = False
                 for _ in range(n_unscramble_step):
-                    a = self.policy(s, ACTION_NUMS)
+                    a = self.policy(s, prev_action, ACTION_NUMS)
+                    prev_action = int(a)
                     n_state, reward, done = env.step(a)
 
                     # monte-carloと同じく手数ペナルティはgammaによって適用される.
