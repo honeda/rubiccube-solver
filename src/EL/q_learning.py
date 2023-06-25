@@ -30,7 +30,7 @@ class QLearningAgent(ELAgent):
         super().__init__(epsilon)
 
     def learn(self, env, Q_file=None, n_theme=50, n_theme_step=3, n_unscramble_step=20,
-              n_episode=1000, theme_actions=None, gamma=0.9, learning_rate=0.1,
+              n_episode=1000, theme_actions=None, gamma="auto", learning_rate=0.1,
               checkpoint_interval=100, report_interval=100,
               Q_filedir="data/EL/Q_learning/", Q_filename=None):
         """
@@ -47,8 +47,8 @@ class QLearningAgent(ELAgent):
                 a specific theme. ex) [["F", "B"], ["D", "F_", "B"].
                 `n_theme` and `theme_steps` are ignored when this argument
                 is not None. Defaults to None.
-            gamma (float, optional): update weight for Q. Must be 0.0 ~ 1.0.
-                Defaults to 0.9.
+            gamma (float or str, optional): update weight for Q.
+                Must be 0.0 ~ 1.0 or "auto". Defaults to "auto".
             learning_rate (float, optional): learning rate. Defaults to 0.1.
             checkpoint_interval (int, optional): Defaults to 100.
             report_interval (int, optional): Defaults to 100.
@@ -57,6 +57,9 @@ class QLearningAgent(ELAgent):
         """
         # Prepare
         self.init_log()
+
+        if gamma == "auto":
+            gamma = self.calc_auto_gamma(n_theme_step)
 
         if Q_file:
             self.Q = self.load_q_file(Q_file)
@@ -69,7 +72,8 @@ class QLearningAgent(ELAgent):
             theme_actions = [replace_wasted_work(i) for i in theme_actions]
 
         # Learning
-        self.logger.info(f"Start learning. {n_theme=}, {n_theme_step=}, {n_unscramble_step=}")
+        self.logger.info(f"Start learning. {gamma=:.2f}, {n_theme=}, {n_theme_step=}"
+                         f", {n_unscramble_step=}")
         appeared_states = []
         never_done_states = []
         for i, scramble_actions in enumerate(theme_actions, 1):
@@ -152,6 +156,15 @@ class QLearningAgent(ELAgent):
         self.logger.info(f"Finish. {n_theme=}, {len(never_done_states)=}"
                          f" ({(len(never_done_states) / n_theme) *100:.1f}%)")
         self.checkpoint(appeared_states, Q_filename, Q_filedir)
+
+    def calc_auto_gamma(self, n_theme_step):
+        """手数`n_theme_step`を入れたとき0.05になる値を返す
+        手数が大きいほど1に近い値を返す. 最大手数は30を想定.
+        """
+        min_ = 0.05
+        gamma = min_ ** (1 / n_theme_step)
+
+        return gamma
 
     def checkpoint(self, states, Q_filename, Q_filedir):
         """squeeze -> deploy -> save
