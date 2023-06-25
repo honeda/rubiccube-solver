@@ -149,7 +149,6 @@ class QLearningAgent(ELAgent):
         self.logger.info(f"Finish. {n_theme=}, {len(never_done_states)=}"
                          f" ({(len(never_done_states) / n_theme) *100:.1f}%)")
         self.checkpoint(appeared_states, Q_filename, Q_filedir)
-        print(np.sort(np.unique(appeared_states, return_counts=True)[1]))
 
     def checkpoint(self, states, Q_filename, Q_filedir):
         """squeeze -> deploy -> save
