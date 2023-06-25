@@ -27,9 +27,9 @@ class ELAgent():
     def show_reward_log(self, interval=50, episode=-1):
         if episode > 0:
             rewards = self.reward_log[-interval:]
-            mean = np.round(np.mean(rewards), 3)
-            std = np.round(np.std(rewards), 3)
-            print("At Episode {} average reward is {} (+/-{}).".format(episode, mean, std))
+            mean = np.mean(rewards)
+            std = np.std(rewards)
+            print(f"At Episode {episode} average reward is {mean:.2f} (+/-{std:.3f}).")
         else:
             indices = list(range(0, len(self.reward_log), interval))
             means = []

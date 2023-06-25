@@ -116,16 +116,26 @@ class QLearningAgent(ELAgent):
                         n_done += 1
                         break
 
+                self.log(reward)
+
                 if e == e_max:
                     if n_done == 0:
                         never_done_states.append(scramble_actions)
+
+                        env.reset_to_gamestart()
+                        state = encode_state(env.cube)
+                        if sum(self.Q[state]) != 0:
+                            print(never_done_states)
+                            print(f"{state=}")
+                            print(f"{self.Q[state]=}")
+                            self.save_q_file(self.Q, "problem_Q.pkl", Q_filedir)
+                            raise Exception("Maybe bug in the color swap logic.")
                     break
 
-                self.log(reward)
-
                 if e != 0 and e % report_interval == 0:
-                    self.show_reward_log(episode=e)
+                    self.show_reward_log(interval=report_interval, episode=e)
 
+        # Post process
         print("Never done states:")
         for s in never_done_states:
             print(s)
