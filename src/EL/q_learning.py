@@ -139,7 +139,7 @@ class QLearningAgent(ELAgent):
                     self.show_reward_log(interval=report_interval, episode=e)
 
             if i != 0 and i % checkpoint_interval == 0:
-                self.logger.info(f"Checkpoint, episode {e}")
+                self.logger.info(f"Checkpoint. Current theme number is {i}.")
                 self.checkpoint(appeared_states, Q_filename, Q_filedir)
                 appeared_states = []
 
