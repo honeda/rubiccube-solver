@@ -30,7 +30,7 @@ class QLearningAgent(ELAgent):
         super().__init__(epsilon)
 
     def learn(self, env, Q_file=None, n_theme=50, n_theme_step=3, n_unscramble_step=20,
-              n_episode=1000, theme_actions=None, gamma="auto", learning_rate=0.1,
+              n_episode=1000, theme_actions=None, learning_rate=0.1,
               checkpoint_interval=100, report_interval=100,
               Q_filedir="data/EL/Q_learning/", Q_filename=None):
         """
@@ -47,14 +47,14 @@ class QLearningAgent(ELAgent):
                 a specific theme. ex) [["F", "B"], ["D", "F_", "B"].
                 `n_theme` and `theme_steps` are ignored when this argument
                 is not None. Defaults to None.
-            gamma (float or str, optional): update weight for Q.
-                Must be 0.0 ~ 1.0 or "auto". Defaults to "auto".
             learning_rate (float, optional): learning rate. Defaults to 0.1.
             checkpoint_interval (int, optional): Defaults to 100.
             report_interval (int, optional): Defaults to 100.
             Q_filedir (str, optional): Defaults to "data/".
             Q_filename (_type_, optional): Defaults to None.
         """
+        gamma = 0.9  # FIX
+
         # Prepare
         self.init_log()
 
@@ -157,14 +157,7 @@ class QLearningAgent(ELAgent):
                          f" ({(len(never_done_states) / n_theme) *100:.1f}%)")
         self.checkpoint(appeared_states, Q_filename, Q_filedir)
 
-    def calc_auto_gamma(self, n_theme_step):
-        """手数`n_theme_step`を入れたとき0.05になる値を返す
-        手数が大きいほど1に近い値を返す. 最大手数は30を想定.
-        """
-        min_ = 0.05
-        gamma = min_ ** (1 / n_theme_step)
 
-        return gamma
 
     def checkpoint(self, states, Q_filename, Q_filedir):
         """squeeze -> deploy -> save
