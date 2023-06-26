@@ -45,9 +45,6 @@ class QLearningAgent(ELAgent):
         # Prepare
         self.init_log()
 
-        if gamma == "auto":
-            gamma = self.calc_auto_gamma(n_theme_step)
-
         if Q_file:
             self.Q = self.load_q_file(Q_file)
         else:
