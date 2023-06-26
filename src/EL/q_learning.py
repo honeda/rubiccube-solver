@@ -113,9 +113,11 @@ class QLearningAgent(ELAgent):
                         env.reset_to_gamestart()
                         state = encode_state(env.cube)
                         if sum(self.Q[state]) != 0:
-                            self.logger.error(f"{scramble_actions=}, {state=}, {self.Q[state]=}")
                             self.save_q_file("problem_Q.pkl", Q_filedir)
-                            raise Exception("Maybe bug in the color swap logic.")
+                            msg = ("Maybe bug in the color swap logic. "
+                                   f"{scramble_actions=}, {state=}, {self.Q[state]=}")
+                            self.logger.error(msg)
+                            raise Exception
                     break
 
                 if e != 0 and e % report_interval == 0:
