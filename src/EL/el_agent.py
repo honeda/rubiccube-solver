@@ -182,7 +182,7 @@ class ELAgent():
 
     def check_done_state_values_error(self):
         """完成状態のstateの価値がすべて0であることを確認する."""
-        solved_state = encode_state(Cube().state)
+        solved_state = encode_state(Cube())
         if max(self.Q[solved_state]) > 0:
             # save Q
             dt = datetime.datetime.now()
