@@ -123,7 +123,10 @@ class MonteCarloAgent(ELAgent):
                     N[s][a] += 1  # count of s, a pair
                     alpha = 1 / N[s][a]
                     values = self.Q[s]  # アクセス回数削減
-                    if G > values[a]:  # 最短手数しばりを求める限り一度見つけた価値が下げる必要はない？
+                    if G > values[a]:
+                        # 最短手数しばりを求める限り一度見つけた価値が下げる必要はない？
+                        # 価値が下げられるのはより長い手を見つけたとき（gammaの手数ペナルティを受けるため）
+                        # より長い手での完成により価値を下げる必要はないはず.
                         values[a] += alpha * (G - values[a])
 
                     if sum(self.Q[s]) != 0:
