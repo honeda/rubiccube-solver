@@ -97,7 +97,6 @@ class ELAgent():
         """squeeze -> deploy -> save
         """
         self.squeeze_q()
-        self.check_done_state_values_error()
         self.deploy_q_to_swapped_state(states)
         self.save_q_file(Q_filename, Q_filedir)
 
