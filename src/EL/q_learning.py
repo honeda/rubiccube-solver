@@ -1,7 +1,7 @@
 from collections import defaultdict
 
 from src.EL.el_agent import ELAgent
-from src.env.action import int2str_actions, generate_action, ACTION_NUMS
+from src.env.action import int2str_actions, generate_random_action, ACTION_NUMS
 from src.utils.cube_util import encode_state
 
 
@@ -50,7 +50,7 @@ class QLearningAgent(ELAgent):
             self.Q = defaultdict(lambda: [0] * len(ACTION_NUMS))
 
         if theme_actions is None:
-            theme_actions = [generate_action(n_theme_step) for _ in range(n_theme)]
+            theme_actions = [generate_random_action(n_theme_step) for _ in range(n_theme)]
 
         # Learning
         self.logger.info(f"Start learning. {gamma=:.2f}, {n_theme=}, {n_theme_step=}"

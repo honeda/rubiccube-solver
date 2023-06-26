@@ -108,7 +108,7 @@ def rotate_to_home_pos(cube: Cube, get_rotate_actions=False):
             raise Exception(f"Green face is {SURFACE_CHARS[g_idx]}")
 
 
-def generate_action(length, return_type="int"):
+def generate_random_action(length, return_type="int"):
     """`F->F_`のような無駄な操作を排除した任意の長さのアクションlistを返す.
 
     排除するのは以下のようなアクションの組み合わせ.
