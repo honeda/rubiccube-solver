@@ -71,13 +71,15 @@ class QLearningAgent(ELAgent):
             e_max = n_episode * 5  # done_thに達していなくてもこのエピソード数で次へ
             n_done = 0
             e = 0
+
+            # Play episodes
             while (n_done < done_th) or (e < n_episode):
                 e += 1
-
                 env.reset_to_gamestart()
                 prev_action = None
                 s = env.states
                 done = False
+
                 for _ in range(n_unscramble_step):
                     a = self.policy(s, prev_action, ACTION_NUMS)
                     prev_action = int(a)
