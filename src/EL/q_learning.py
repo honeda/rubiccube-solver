@@ -107,6 +107,7 @@ class QLearningAgent(ELAgent):
                     if n_done == 0:
                         never_done_states.append(scramble_actions)
 
+                        # 1回も解けなかったstateなのに価値がある場合、color-swapのバグかもしれない
                         env.reset_to_gamestart()
                         state = encode_state(env.cube)
                         if sum(self.Q[state]) != 0:
