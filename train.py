@@ -1,14 +1,15 @@
 import argparse
 
 from src.env import Environment
-from src.EL.monte_carlo import MonteCarloAgent, get_newest_qn_file
-from src.EL.q_learning import QLearningAgent, get_newest_q_file
+from src.EL.monte_carlo import MonteCarloAgent
+from src.EL.q_learning import QLearningAgent
+from src.EL.util import get_newest_q_file
 
 
 def monte_carlo(args):
 
     if args.Q_file is None:
-        Q_file = get_newest_qn_file()
+        Q_file = get_newest_q_file("data/EL/monte_carlo/")
         print(f"{Q_file=}")
 
     agent = MonteCarloAgent(epsilon=args.epsilon)
@@ -18,7 +19,7 @@ def monte_carlo(args):
         n_theme=args.n_theme,
         n_unscramble_step=args.n_unscramble_step,
         n_episode=args.n_episode,
-        QN_file=Q_file,
+        Q_file=Q_file,
         report_interval=args.report_interval,
     )
 

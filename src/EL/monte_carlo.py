@@ -1,40 +1,25 @@
 import math
-import datetime
-import pickle
 from collections import defaultdict
-from pathlib import Path
 
 import numpy as np
 
 from src.EL.el_agent import ELAgent
 from src.env.action import int2str_actions, replace_wasted_work, ACTION_NUMS
+from src.utils.cube_util import encode_state
 
-
-def get_newest_qn_file(dir_="data/EL/monte_carlo"):
-    files = [i for i in Path(dir_).iterdir()
-             if i.name.startswith("QN") and i.name.endswith(".pkl")]
-    if len(files) == 0:
-        return None
-    else:
-        dts = [datetime.datetime.strptime(i.name, "QN_%Y%m%d%H%M.pkl")
-               for i in files]
-        idx = dts.index(max(dts))
-
-        return str(files[idx])
 
 class MonteCarloAgent(ELAgent):
 
     def __init__(self, epsilon=0.1):
         super().__init__(epsilon)
-        self.N = {}
 
-    def learn(self, env, QN_file=None, n_theme=50, n_theme_step=3, n_unscramble_step=20,
-              n_episode=1000, theme_actions=None, gamma=0.9, report_interval=100,
+    def learn(self, env, Q_file=None, n_theme=50, n_theme_step=3, n_unscramble_step=20,
+              n_episode=1000, theme_actions=None, checkpoint_interval=200, report_interval=100,
               Q_filedir="data/EL/monte_carlo", Q_filename=None):
         """
         Args:
             env (Environment):
-            QN_file (str, optional): Q file path. Defaults to None.
+            Q_file (str, optional): Q file path. Defaults to None.
             n_theme (int, optional): Num of theme. Defaults to 50.
             n_theme_step (int, optional): Num of step each theme.
                 Defaults to 3.
@@ -45,20 +30,22 @@ class MonteCarloAgent(ELAgent):
                 a specific theme. ex) [["F", "B"], ["D", "F_", "B"].
                 `n_theme` and `theme_steps` are ignored when this argument
                 is not None. Defaults to None.
-            gamma (float, optional): update weight for Q. Must be 0.0 ~ 1.0.
-                Defaults to 0.9.
+            checkpoint_interval (int, optional): Defaults to 100.
             report_interval (int, optional): Defaults to 100.
             Q_filedir (str, optional): Defaults to "data/".
             Q_filename (_type_, optional): Defaults to None.
         """
+        gamma = 0.9  # FIX
+
         # Prepare
         self.init_log()
 
-        if QN_file:
-            self.Q, self.N = self.load_qn_file(QN_file)
+        if Q_file:
+            self.Q = self.load_q_file(Q_file)
         else:
             self.Q = defaultdict(lambda: [0] * len(ACTION_NUMS))
-            self.N = defaultdict(lambda: [0] * len(ACTION_NUMS))
+
+        N = defaultdict(lambda: [0] * len(ACTION_NUMS))
 
         if theme_actions is None:
             theme_actions = np.random.choice(ACTION_NUMS, size=(n_theme, n_theme_step))
@@ -66,30 +53,40 @@ class MonteCarloAgent(ELAgent):
             theme_actions = [replace_wasted_work(i) for i in theme_actions]
 
         # Learning
+        self.logger.info(f"Start learning. {gamma=:.2f}, {n_theme=}, {n_theme_step=}"
+                         f", {n_unscramble_step=}")
+        appeared_states = []
+        never_done_states = []
         for i, scramble_actions in enumerate(theme_actions, 1):
             # Scramble
             print("==============================================================")
             print(f"No.{i:0>4} Theme scene: {int2str_actions(scramble_actions)}")
-            # self.save_theme_fig(scramble_actions, i)
+
             env.set_game_start_position(scramble_actions)
 
-            done_th = n_episode / 5  # この回数完成させないと次のthemeにいかない
-            e_max = n_episode * 5  # done_thに達していなくてもこのエピソード数で次へ
+            # スクランブルした状態が完成状態なら次へ
+            if env.cube.is_solved:
+                continue
+
+            done_th = n_episode / 1  # この回数完成させないと次のthemeにいかない
+            e_max = n_episode * 7  # done_thに達していなくてもこのエピソード数で次へ
             n_done = 0
             e = 0
-            # for e in range(n_episode):
+
+            # Play episodes
             while (n_done < done_th) or (e < n_episode):
                 e += 1
-
                 env.reset_to_gamestart()
+                prev_action = None
                 s = env.states
                 done = False
-                # Play until the end of episode.
                 experience = []
-                # while not done:
+
                 for _ in range(n_unscramble_step):
-                    a = self.policy(s, ACTION_NUMS)
+                    a = self.policy(s, prev_action, ACTION_NUMS)
+                    prev_action = int(a)
                     n_state, reward, done = env.step(a)
+
                     experience.append({"state": s, "action": a, "reward": reward})
                     s = n_state
                     if done:
@@ -97,6 +94,18 @@ class MonteCarloAgent(ELAgent):
                         break
 
                 if e == e_max:
+                    if n_done == 0:
+                        never_done_states.append(scramble_actions)
+
+                        # 1回も解けなかったstateなのに価値がある場合、color-swapのバグかもしれない
+                        env.reset_to_gamestart()
+                        state = encode_state(env.cube)
+                        if sum(self.Q[state]) != 0:
+                            self.save_q_file("problem_Q.pkl", Q_filedir)
+                            msg = ("Maybe bug in the color swap logic. "
+                                   f"{scramble_actions=}, {state=}, {self.Q[state]=}")
+                            self.logger.error(msg)
+                            raise Exception
                     break
 
                 self.log(reward)
@@ -111,104 +120,27 @@ class MonteCarloAgent(ELAgent):
                         G += math.pow(gamma, t) * experience[j]["reward"]
                         t += 1
 
-                    self.N[s][a] += 1  # count of s, a pair
-                    alpha = 1 / self.N[s][a]
-                    self.Q[s][a] += alpha * (G - self.Q[s][a])
+                    N[s][a] += 1  # count of s, a pair
+                    alpha = 1 / N[s][a]
+                    values = self.Q[s]  # アクセス回数削減
+                    if G > values[a]:  # 最短手数しばりを求める限り一度見つけた価値が下げる必要はない？
+                        values[a] += alpha * (G - values[a])
+
+                    if sum(self.Q[s]) != 0:
+                        appeared_states.append(s)
 
                 if e != 0 and e % report_interval == 0:
                     self.show_reward_log(episode=e)
 
-        self.Q, self.N = self.squeeze_qn(self.Q, self.N)
-        self.save_qn_file(self.Q, self.N, Q_filename, Q_filedir)
+            if i != 0 and i % checkpoint_interval == 0:
+                self.logger.info(f"Checkpoint. Current theme number is {i}.")
+                self.checkpoint(appeared_states, Q_filename, Q_filedir)
+                appeared_states = []
 
-    def squeeze_qn(self, Q, N):
-        """Q, N ともに`Qのvalueの合計値が0のkeyを削除して容量削減.
-
-        成功したことないstateの場合、一様分布からアクションを決めるため
-        各アクションの試行回数に偏りはない(はず）.
-        よって成功したことのないstateの試行回数(N)を保存しておく必要はない.
-
-        Return:
-            dict: NOT defaultdict
-            dict: NOT defaultdict
-        """
-        key_q = np.array(list(Q.keys()))
-        key_n = np.array(list(N.keys()))
-        value_q = np.array(list(Q.values()))
-        value_n = np.array(list(N.values()))
-        sum_q = np.sum(value_q, axis=1)
-
-        mask = (sum_q != 0)
-        q = dict(zip(key_q[mask], value_q[mask]))
-        n = dict(zip(key_n[mask], value_n[mask]))
-
-        # check
-        for i, j in zip(q.keys(), n.keys()):
-            if i != j:
-                raise Exception("saved original Q and N.")
-
-        return q, n
-
-    def save_qn_file(self, Q, N, Q_filename, Q_filedir):
-        # Save Q & N
-        dt = datetime.datetime.now()
-        filename = ("QN_{}.pkl".format(dt.strftime("%Y%m%d%H%M"))
-                    if Q_filename is None else Q_filename)
-        with open(Path(Q_filedir, filename), "wb") as f:
-            pickle.dump([dict(Q), dict(N)], f)
-            print(f"{len(Q)=}")
-
-    def load_qn_file(self, file_path):
-        """
-        Args:
-            file_path (str): file path
-
-        Returns:
-            Q (defaultdict)
-            N (defaultdict)
-        """
-        Q = defaultdict(lambda: [0] * len(ACTION_NUMS))
-        N = defaultdict(lambda: [0] * len(ACTION_NUMS))
-
-        Q_, N_ = pickle.load(open(file_path, "rb"))
-        # dict -> defaultdict
-        for k, v in Q_.items():
-            Q[k] = v
-        for k, v in N_.items():
-            N[k] = v
-        print(f"{len(Q)=}, {len(N)=}")
-
-        return Q, N
-
-    # def calc_auto_gamma(self, n_theme_step):
-    #     """手数`n_theme_step`を入れたとき0.05になる値を返す
-    #     手数が大きいほど1に近い値を返す. 最大手数は30を想定.
-
-    #     不要と判断し削除.
-    #     これを使うと短手数でgammaが低くなるが、
-    #     そうすると最短手数のアクションの報酬も低くなりがち.
-    #     その状態で長手数(gmmmaが高い)を解かせたときに、epsilonにより
-    #     最短手数でないアクションが選択されたときにその手の報酬が
-    #     高く評価され(gammaが高いため) 最短手数の報酬を超える可能性がある
-    #     と考えたため.
-
-    #     """
-    #     min_ = 0.05
-    #     gamma = min_ ** (1 / n_theme_step)
-
-    #     return gamma
-
-    # X, Y, Z を使わない場合、これはいらない
-    # def update_qn_all_color_swap_states(self, Q, self.N, s):
-    #     q, n = Q[s], N[s]
-
-    #     cube = Cube()
-    #     cube.state = decode_state(s)
-    #     swapped_cubes = get_color_swap_states(cube)
-    #     swapped_states = [encode_state(i) for i in swapped_cubes]
-
-    #     for s_ in swapped_states:
-    #         Q[s_] = q
-    #         N[s_] = n
-
-    #     return Q, N
+        # Post process
+        print("Never done states:")
+        for s in never_done_states:
+            print(s)
+        self.logger.info(f"Finish. {n_theme=}, {len(never_done_states)=}"
+                         f" ({(len(never_done_states) / n_theme) *100:.1f}%)")
+        self.checkpoint(appeared_states, Q_filename, Q_filedir)
