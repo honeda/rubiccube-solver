@@ -27,7 +27,7 @@ def monte_carlo(args):
 def q_learning(args):
 
     if args.Q_file is None:
-        Q_file = get_newest_q_file()
+        Q_file = get_newest_q_file("data/EL/Q_learning/")
         print(f"{Q_file=}")
 
     agent = QLearningAgent(epsilon=args.epsilon)
