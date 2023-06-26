@@ -58,10 +58,10 @@ class MonteCarloAgent(ELAgent):
                          f", {n_unscramble_step=}")
         appeared_states = []
         never_done_states = []
-        for i, scramble_actions in enumerate(theme_actions, 1):
+        for theme, scramble_actions in enumerate(theme_actions, 1):
             # Scramble
             print("==============================================================")
-            print(f"No.{i:0>4} Theme scene: {int2str_actions(scramble_actions)}")
+            print(f"No.{theme:0>4} Theme scene: {int2str_actions(scramble_actions)}")
 
             env.set_game_start_position(scramble_actions)
 
@@ -136,8 +136,8 @@ class MonteCarloAgent(ELAgent):
                 if e != 0 and e % report_interval == 0:
                     self.show_reward_log(episode=e)
 
-            if i != 0 and i % checkpoint_interval == 0:
-                self.logger.info(f"Checkpoint. Current theme number is {i}.")
+            if theme != 0 and theme % checkpoint_interval == 0:
+                self.logger.info(f"Checkpoint. Current theme number is {theme}.")
                 self.checkpoint(appeared_states, Q_filename, Q_filedir)
                 appeared_states = []
 
