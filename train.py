@@ -20,7 +20,6 @@ def monte_carlo(args):
         n_episode=args.n_episode,
         QN_file=Q_file,
         report_interval=args.report_interval,
-        gamma=args.gamma
     )
 
 
@@ -39,7 +38,6 @@ def q_learning(args):
         n_episode=args.n_episode,
         Q_file=Q_file,
         report_interval=args.report_interval,
-        gamma=args.gamma if args.gamma == "auto" else float(args.gamma),
         learning_rate=args.learning_rate
     )
 
@@ -54,7 +52,6 @@ if __name__ == "__main__":
     parser.add_argument("--n_theme", default=50, type=int)
     parser.add_argument("--n_episode", default=1000, type=int)
     parser.add_argument("--report_interval", default=100, type=int)
-    parser.add_argument("--gamma", default="auto", type=str)
     parser.add_argument("--learning_rate", default=0.1, type=int)
     parser.add_argument("--epsilon", default=0.1, type=float)
 
