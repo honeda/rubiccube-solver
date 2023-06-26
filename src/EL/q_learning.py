@@ -8,20 +8,7 @@ import numpy as np
 from src.EL.el_agent import ELAgent
 from src.env.cube import Cube
 from src.env.action import int2str_actions, replace_wasted_work, ACTION_NUMS
-from src.utils.cube_util import encode_state, decode_state, get_color_swap_states
-
-
-def get_newest_q_file(dir_="data/EL/Q_learning"):
-    files = [i for i in Path(dir_).iterdir()
-             if i.name.startswith("Q") and i.name.endswith(".pkl")]
-    if len(files) == 0:
-        return None
-    else:
-        dts = [datetime.datetime.strptime(i.name, "Q_%Y%m%d%H%M.pkl")
-               for i in files]
-        idx = dts.index(max(dts))
-
-        return str(files[idx])
+from src.utils.cube_util import encode_state
 
 
 class QLearningAgent(ELAgent):
