@@ -97,6 +97,7 @@ class ELAgent():
         """squeeze -> deploy -> save
         """
         self.squeeze_q()
+        self.check_done_state_values_error()
         self.deploy_q_to_swapped_state(states)
         self.save_q_file(Q_filename, Q_filedir)
 
@@ -178,3 +179,19 @@ class ELAgent():
             print(f"LAST {swapped_state=}")
         except Exception:
             pass
+
+    def check_done_state_values_error(self):
+        """完成状態のstateの価値がすべて0であることを確認する."""
+        solved_state = encode_state(Cube().state)
+        if max(self.Q[solved_state]) > 0:
+            # save Q
+            dt = datetime.datetime.now()
+            filename = "err_Q_{}.pkl".format(dt.strftime("%Y%m%d%H%M"))
+            dir_ = "data/EL/"
+            self.save_q_file(filename, dir_)
+
+            msg = (f"Q-value of solved state is not '0'. {self.Q[solved_state]=}."
+                   f" Save Q file -> {Path(dir_, filename)}.")
+            self.logger.critical(msg)
+
+            raise Exception

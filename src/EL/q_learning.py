@@ -98,14 +98,8 @@ class QLearningAgent(ELAgent):
                         appeared_states.append(s)
 
                     if done:
-                        if max_next_state_value > 0:
-                            self.logger.error(
-                                f"{reward=}, {gain=}, {self.Q[n_state]=}, {env.cube.state=}"
-                            )
-                            raise Exception
-                        else:
-                            n_done += 1
-                            break
+                        n_done += 1
+                        break
 
                 self.log(reward)
 
