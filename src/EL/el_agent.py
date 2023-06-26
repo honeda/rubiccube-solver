@@ -1,10 +1,16 @@
+import datetime
+import pickle
 import json
+from collections import defaultdict
+from pathlib import Path
 from logging import getLogger, config
 
 import numpy as np
 import matplotlib.pyplot as plt
 
-# from src.env.action import ACTION_CHARS
+from src.env.cube import Cube
+from src.env.action import ACTION_NUMS
+from src.utils.cube_util import encode_state, decode_state, get_color_swap_states
 
 
 class ELAgent():
@@ -86,3 +92,90 @@ class ELAgent():
                      label="Rewards for each {} episode".format(interval))
             plt.legend(loc="best")
             plt.show()
+
+    def checkpoint(self, states, Q_filename, Q_filedir):
+        """squeeze -> deploy -> save
+        """
+        self.squeeze_q()
+        self.check_done_state_values_error()
+        self.deploy_q_to_swapped_state(states)
+        self.save_q_file(Q_filename, Q_filedir)
+
+    def squeeze_q(self):
+        """Qのvalueの合計値が0のkeyを削除して容量削減.
+        """
+        key_q = np.array(list(self.Q.keys()))
+        value_q = np.array(list(self.Q.values()))
+        sum_q = np.sum(value_q, axis=1)
+
+        mask = (sum_q != 0)
+
+        dic = defaultdict(lambda: [0] * len(ACTION_NUMS))
+        for k, v in zip(key_q[mask], value_q[mask]):
+            dic[k] = v
+
+        self.Q = dic
+
+    def save_q_file(self, Q_filename, Q_filedir):
+        # Save Q
+        dt = datetime.datetime.now()
+        filename = ("Q_{}.pkl".format(dt.strftime("%Y%m%d%H%M"))
+                    if Q_filename is None else Q_filename)
+        with open(Path(Q_filedir, filename), "wb") as f:
+            pickle.dump(dict(self.Q), f)
+        self.logger.info(f"Save Q file. {len(self.Q)=:,}")
+
+    def load_q_file(self, file_path):
+        """
+        Args:
+            file_path (str): file path
+
+        Returns:
+            Q (defaultdict)
+            N (defaultdict)
+        """
+        Q = defaultdict(lambda: [0] * len(ACTION_NUMS))
+
+        Q_ = pickle.load(open(file_path, "rb"))
+        # dict -> defaultdict
+        for k, v in Q_.items():
+            Q[k] = v
+
+        self.logger.info(f"Load Q file. {len(Q)=:,}")
+
+        return Q
+
+    def deploy_q_to_swapped_state(self, states):
+        """色とアクションをスワップする技術を利用して、すでにQに保存されている局面の価値を
+        色をスワップした別の局面にも反映する.
+        局面の複雑具合によるが、1つの局面から最大25局面増やせる.
+        """
+        self.logger.info("Deploy Q values to swapped states.")
+        count = 0
+        for state in np.unique(states):
+            if state in self.Q:
+                values = self.Q[state]
+                state = decode_state(state)
+
+                if sum(values) != 0:
+                    cube = Cube()
+                    cube.state = state
+                    swapped_cubes, translated_action_dics = get_color_swap_states(cube)
+                    for sc, ta in zip(swapped_cubes, translated_action_dics):
+                        swapped_state = encode_state(sc)
+                        if swapped_state in self.Q:
+                            continue
+                        else:
+                            # アクションの入れ替え
+                            new_values = list(np.array(values)[ta])
+
+                            self.Q[swapped_state] = new_values
+                            count += 1
+                else:
+                    print("yeah")
+
+        self.logger.info(f"Complete. Deployed {count:,} states.")
+        try:
+            print(f"LAST {swapped_state=}")
+        except Exception:
+            pass
