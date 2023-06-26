@@ -11,7 +11,7 @@ class MonteCarloAgent(ELAgent):
     def __init__(self, epsilon=0.1):
         super().__init__(epsilon)
 
-    def learn(self, env, Q_file=None, n_theme=50, n_theme_step=3, n_unscramble_step=20,
+    def learn(self, env, Q_file=None, n_theme=50, n_theme_step=3, n_unscramble_step="auto",
               n_episode=1000, theme_actions=None, checkpoint_interval=200, report_interval=100,
               Q_filedir="data/EL/monte_carlo", Q_filename=None):
         """
@@ -21,7 +21,9 @@ class MonteCarloAgent(ELAgent):
             n_theme (int, optional): Num of theme. Defaults to 50.
             n_theme_step (int, optional): Num of step each theme.
                 Defaults to 3.
-            n_unscramble_step (int, optional): Num of unscramble step.
+            n_unscramble_step (int or str, optional): Num of unscramble step.
+                When "auto", this argument to be value of `n_theme_step`.
+                Defaults to "auto".
             n_episode (int, optional): Num of episode per theme.
                 Defaults to 1000.
             theme_actions (list, optional): Use when you want to give
@@ -34,6 +36,9 @@ class MonteCarloAgent(ELAgent):
             Q_filename (_type_, optional): Defaults to None.
         """
         gamma = 0.9  # FIX
+
+        if n_unscramble_step == "auto":
+            n_unscramble_step = n_theme_step
 
         # Prepare
         self.init_log()

@@ -49,7 +49,7 @@ if __name__ == "__main__":
     parser.add_argument("--mode", "-m", type=str, help="'monte_carlo' or 'Q_learning'.")
     parser.add_argument("--Q_file", default=None)
     parser.add_argument("--n_theme_step", default=3, type=int)
-    parser.add_argument("--n_unscramble_step", default=20, type=int)
+    parser.add_argument("--n_unscramble_step", default="auto", type=str)
     parser.add_argument("--n_theme", default=50, type=int)
     parser.add_argument("--n_episode", default=1000, type=int)
     parser.add_argument("--report_interval", default=100, type=int)
@@ -57,6 +57,8 @@ if __name__ == "__main__":
     parser.add_argument("--epsilon", default=0.1, type=float)
 
     args = parser.parse_args()
+    if args.n_unscramble_step != "auto":
+        args.n_unscramble_step = int(args.n_unscramble_step)
 
     env = Environment()
 
