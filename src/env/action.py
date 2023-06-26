@@ -48,30 +48,6 @@ def int2str_actions(actions):
     return [ACTION_CHARS_WITH_ROTATE[i] for i in actions]
 
 
-def replace_wasted_work(actions: np.ndarray):
-    """`F`のあとに`F_`のような無駄な動きをなくす.
-
-    Args:
-        actions (np.ndarray):
-    Return:
-        np.ndarray
-    """
-    a = actions.copy()
-    idx1, idx2 = [0], [0]
-    while not ((len(idx1) == 0) and (len(idx2) == 0)):
-        diff = np.diff(a, prepend=a[0])
-        # replace like "F F_" -> "F F"
-        idx1 = np.argwhere((diff == 1) & (a % 2 == 1)).ravel()
-        for i in idx1:
-            a[i] = a[i] - 1
-        # replace like "F_ F" -> "F_ F_"
-        idx2 = np.argwhere((diff == -1) & (a % 2 == 0)).ravel()
-        for i in idx2:
-            a[i] = a[i] + 1
-
-    return a
-
-
 def get_reverse_actions(actions, return_type="int"):
     # これだと`numpy.str_`のとき検知できない
     # if type(actions[0]) != str:
@@ -130,3 +106,124 @@ def rotate_to_home_pos(cube: Cube, get_rotate_actions=False):
             step(cube, "Y")
         else:
             raise Exception(f"Green face is {SURFACE_CHARS[g_idx]}")
+
+
+def generate_action(length, return_type="int"):
+    """`F->F_`のような無駄な操作を排除した任意の長さのアクションlistを返す.
+
+    排除するのは以下のようなアクションの組み合わせ.
+    * F -> F_
+    * F -> F -> F  (= F_)
+    * F -> B -> F_ (= B)
+    * F -> F -> B -> F  (= F_ -> B)
+    * F -> B -> F -> F  (= F_ -> B)
+    * F -> B -> B -> F_ (= B -> B)
+    * F -> F -> B -> B -> F (= F_ -> B -> B)
+    * F -> B -> B -> F -> F (= F_ -> B -> B)
+
+    Args:
+        length (_type_): _description_
+        return_type (str, optional): _description_. Defaults to "int".
+    Returns:
+        list: action list
+    """
+    opposite_face_actions = [
+        # 反対の面の操作
+        (8, 9),    # F: (B, B_)
+        (8, 9),    # F_: (B, B_)
+        (6, 7),    # U: (D, D_)
+        (6, 7),    # U_: (D, D_)
+        (10, 11),  # R: (L, L_)
+        (10, 11),  # R_: (L, L_)
+        (2, 3),    # D: (U, U_)
+        (2, 3),    # D_: (U, U_)
+        (0, 1),    # B: (F, F_)
+        (0, 1),    # B_: (F, F_)
+        (4, 5),    # L: (R, R_)
+        (4, 5),    # L_: (R, R_)
+    ]
+
+    actions = []
+    for _ in range(length):
+        action_space = [i for i in ACTION_NUMS]
+        removes = []
+        if len(actions) > 0:
+            # F->F_, F_->F のようになるアクションを除去
+            if actions[-1] % 2 == 0:
+                removes.append(actions[-1] + 1)
+            else:
+                removes.append(actions[-1] - 1)
+
+        if len(actions) >= 2:
+
+            p1 = actions[-1]
+            p2 = actions[-2]
+            # F->F ときているとき Fを除去
+            if p1 == p2:
+                removes.append(p1)
+
+            # F->B ときているとき F_を除去
+            if p1 in opposite_face_actions[p2]:
+                if p2 % 2 == 0:
+                    removes.append(p2 + 1)
+                else:
+                    removes.append(p2 - 1)
+
+            if len(actions) >= 3:
+                p3 = actions[-3]
+
+                # F->F->B ときているとき Fを除去
+                if (
+                    p2 == p3
+                    and p1 in opposite_face_actions[p2]
+                ):
+                    removes.append(p2)
+                    # debug message
+                    # print(int2str_actions(actions))
+                    # print(int2str_actions([removes[-1]]))
+
+                # F->B->F ときているとき Fを除去
+                if (
+                    p1 == p3
+                    and p2 in opposite_face_actions[p1]
+                ):
+                    removes.append(p1)
+
+                # F->B->B ときているとき F_を除去
+                if (
+                    p1 in opposite_face_actions[p3]
+                    and p2 in opposite_face_actions[p3]
+                ):
+                    if p3 % 2 == 0:
+                        removes.append(p3 + 1)
+                    else:
+                        removes.append(p3 - 1)
+
+            if len(actions) >= 4:
+                p4 = actions[-4]
+
+                # F->F->B->B ときているとき Fを除去
+                if (
+                    p3 == p4
+                    and p1 in opposite_face_actions[p3]
+                    and p2 in opposite_face_actions[p3]
+                ):
+                    removes.append(p3)
+
+                # F->B->B->F ときているとき Fを除去
+                if (
+                    p1 == p4
+                    and p2 in opposite_face_actions[p1]
+                    and p3 in opposite_face_actions[p1]
+                ):
+                    removes.append(p1)
+
+        for i in np.unique(removes):
+            action_space.remove(i)
+
+        actions.append(np.random.choice(action_space))
+
+    if return_type == "int":
+        return actions
+    else:
+        return int2str_actions(actions)
