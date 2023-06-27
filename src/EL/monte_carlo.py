@@ -69,6 +69,14 @@ class MonteCarloAgent(ELAgent):
             if env.cube.is_solved:
                 continue
 
+            # すでに知っている場面なら次へ
+            if (
+                env.states in self.Q
+                and max(self.Q[env.states]) != 0
+            ):
+                print("known state, continue...")
+                continue
+
             done_th = n_episode / 1  # この回数完成させないと次のthemeにいかない
             e_max = n_episode * 7  # done_thに達していなくてもこのエピソード数で次へ
             n_done = 0
