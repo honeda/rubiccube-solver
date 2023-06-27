@@ -55,9 +55,6 @@ class ELAgent():
             while a == kinjite:
                 count += 1
                 a = self.policy_base(s, actions)
-            # if count > 40:
-            #     self.logger.info(f"prev_action={ACTION_CHARS[prev_action]}, "
-            #                      f"{s=}, {dict(zip(ACTION_CHARS, self.Q[s]))}")
 
             return a
 
