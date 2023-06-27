@@ -150,7 +150,7 @@ class ELAgent():
         色をスワップした別の局面にも反映する.
         局面の複雑具合によるが、1つの局面から最大25局面増やせる.
         """
-        self.logger.info("Deploy Q values to swapped states.")
+        self.logger.info(f"Deploy Q values to swapped states. {len(self.Q)=}")
         count = 0
         for state in np.unique(states):
             if state in self.Q:
