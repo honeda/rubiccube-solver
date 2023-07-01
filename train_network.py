@@ -183,9 +183,11 @@ for e in range(args.epoch):
         f"{sum_loss_policy_epoch / steps_epoch:.3f}, "
         f"{sum_loss_value_epoch / steps_epoch:.3f}, "
         f"{(sum_loss_value_epoch + sum_loss_value_epoch) / steps_epoch:.3f} "
-        f"test loss= {sum_test_loss_policy:.3f}, {sum_test_loss_value:.3f}, "
-        f"{sum_test_loss_policy + sum_test_loss_value:.3f}, "
-        f"test accuracy = {sum_test_accuracy_policy:.3f}, {sum_test_accuracy_value:.3f}"
+        f"test loss= {sum_test_loss_policy / test_steps:.3f}, "
+        f"{sum_test_loss_value / test_steps:.3f}, "
+        f"{(sum_test_loss_policy + sum_test_loss_value) / test_steps:.3f}, "
+        f"test accuracy = {sum_test_accuracy_policy / test_steps:.3f}, "
+        f"{sum_test_accuracy_value / test_steps:.3f}"
     )
 
     if args.checkpoint:
