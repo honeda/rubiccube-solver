@@ -103,7 +103,7 @@ class DataLoader:
 
     def pre_fetch(self):
         q_tbl = self.q_table[self.i: self.i + self.batch_size]
-        self.i += 1
+        self.i += self.batch_size
         if len(q_tbl) < self.batch_size:
             return
 
