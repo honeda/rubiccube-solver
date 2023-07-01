@@ -10,7 +10,7 @@ from src.neural_network.network import Model
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("train_data", type=str, nargs="+", help="training data file")
+parser.add_argument("train_data", type=str, help="training data file")
 parser.add_argument("test_data", type=str, help="test data file")
 parser.add_argument("--gpu", "-g", type=int, help="GPU ID")
 parser.add_argument("--epoch", "-e", type=int, default=1, help="Number of epoch times")
@@ -67,8 +67,8 @@ else:
 
 # read train & test data
 logger.info("reading training and test data.")
-train_dataloader = DataLoader(args.train_data, args.batch_size, device, shuffle=True)
-test_dataloader = DataLoader(args.test_data, args.test_batch_size, device)
+train_dataloader = DataLoader(args.train_data, args.batchsize, device, shuffle=True)
+test_dataloader = DataLoader(args.test_data, args.test_batchsize, device)
 logger.info(f"Train data num: {len(train_dataloader):,}")
 logger.info(f"Test data num : {len(test_dataloader):,}")
 
