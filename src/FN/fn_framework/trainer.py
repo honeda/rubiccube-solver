@@ -2,7 +2,7 @@ import re
 from collections import deque
 
 from src.FN.fn_framework import Experience
-from src.env import Environment
+from src.env.environment import Environment
 
 
 class Trainer:

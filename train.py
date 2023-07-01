@@ -1,6 +1,6 @@
 import argparse
 
-from src.env import Environment
+from src.env.environment import Environment
 from src.EL.monte_carlo import MonteCarloAgent
 from src.EL.q_learning import QLearningAgent
 from src.EL.util import get_newest_q_file

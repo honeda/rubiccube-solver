@@ -2,7 +2,7 @@ from collections import namedtuple
 
 import numpy as np
 
-from src.env import Environment
+from src.env.environment import Environment
 
 
 Experience = namedtuple("Experience",
