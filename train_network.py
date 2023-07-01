@@ -128,7 +128,6 @@ for e in range(args.epoch):
         steps_epoch += 1
         sum_loss_policy_epoch += loss_policy.item()
         sum_loss_value_epoch += loss_value.item()
-        print(sum_loss_policy_interval)
 
         # Display training loss and test loss and accuracy
         # for each evaluation interval.
