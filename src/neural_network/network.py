@@ -50,7 +50,7 @@ class Model(nn.Module):
 
         self.conv1 = nn.Conv2d(in_channels=N_CHANNEL, out_channels=channels,
                                kernel_size=3, padding=1, bias=False)
-        self.bn1 = nn.BatchNorm2d(N_CHANNEL)
+        self.bn1 = nn.BatchNorm2d(channels)
 
         self.blocks = nn.Sequential(*[ResNetBlock(channels) for _ in range(blocks)])
 
