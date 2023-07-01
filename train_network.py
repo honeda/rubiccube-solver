@@ -128,6 +128,7 @@ for e in range(args.epoch):
         steps_epoch += 1
         sum_loss_policy_epoch += loss_policy.item()
         sum_loss_value_epoch += loss_value.item()
+        print(sum_loss_policy_interval)
 
         # Display training loss and test loss and accuracy
         # for each evaluation interval.
@@ -159,34 +160,34 @@ for e in range(args.epoch):
         sum_loss_policy_interval = 0
         sum_loss_value_interval = 0
 
-        # Evaluate using all of the data at the end of the epoch.
-        test_steps = 0
-        sum_test_loss_policy = 0
-        sum_test_loss_value = 0
-        sum_test_accuracy_policy = 0
-        sum_test_accuracy_value = 0
+    # Evaluate using all of the data at the end of the epoch.
+    test_steps = 0
+    sum_test_loss_policy = 0
+    sum_test_loss_value = 0
+    sum_test_accuracy_policy = 0
+    sum_test_accuracy_value = 0
 
-        model.eval()
-        with torch.no_grad():
-            for x, label, value in test_dataloader:
-                y1, y2 = model(x)
+    model.eval()
+    with torch.no_grad():
+        for x, label, value in test_dataloader:
+            y1, y2 = model(x)
 
-                test_steps += 1
-                sum_test_loss_policy += bce_loss(y1, label).item()
-                sum_test_loss_value += bce_loss(y2, value).item()
-                sum_test_accuracy_policy += binary_accuracy(y1, label)
-                sum_test_accuracy_value += binary_accuracy(y2, value)
+            test_steps += 1
+            sum_test_loss_policy += bce_loss(y1, label).item()
+            sum_test_loss_value += bce_loss(y2, value).item()
+            sum_test_accuracy_policy += binary_accuracy(y1, label)
+            sum_test_accuracy_value += binary_accuracy(y2, value)
 
-        logger.info(
-            f"epoch = {epoch}, step = {t},"
-            "\ntrain loss = "
-            f"{sum_loss_policy_epoch / steps_epoch:.5f}, "
-            f"{sum_loss_value_epoch / steps_epoch:.5f}, "
-            f"{(sum_loss_value_epoch + sum_loss_value_epoch) / steps_epoch:.5f}"
-            f"\ntest loss= {sum_test_loss_policy:.5f}, {sum_test_loss_value:.5f}, "
-            f"{sum_test_loss_policy + sum_test_loss_value:.5f}, "
-            f"\ntest accuracy = {sum_test_accuracy_policy:.5f}, {sum_test_accuracy_value:.5f}"
-        )
+    logger.info(
+        f"epoch = {epoch}, step = {t},"
+        "\ntrain loss = "
+        f"{sum_loss_policy_epoch / steps_epoch:.5f}, "
+        f"{sum_loss_value_epoch / steps_epoch:.5f}, "
+        f"{(sum_loss_value_epoch + sum_loss_value_epoch) / steps_epoch:.5f}"
+        f"\ntest loss= {sum_test_loss_policy:.5f}, {sum_test_loss_value:.5f}, "
+        f"{sum_test_loss_policy + sum_test_loss_value:.5f}, "
+        f"\ntest accuracy = {sum_test_accuracy_policy:.5f}, {sum_test_accuracy_value:.5f}"
+    )
 
-        if args.checkpoint:
-            save_checkpoint()
+    if args.checkpoint:
+        save_checkpoint()
