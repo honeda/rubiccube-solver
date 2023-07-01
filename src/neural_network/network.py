@@ -38,7 +38,7 @@ class Model(nn.Module):
 
         # value
         self.value_fn1 = nn.Linear(N_CHANNEL * 3 * 3, 28)
-        self.value_fn1 = nn.Linear(28, 1)
+        self.value_fn2 = nn.Linear(28, 1)
 
     def forward(self, x):
         x = self.conv1(x)
@@ -50,7 +50,7 @@ class Model(nn.Module):
         x = self.conv3(x)
         x = self.relu(x)
 
-        x = self.flatten(x, 1)
+        x = self.flatten(x)
 
         policy = self.policy_fn1(x)
         policy = self.relu(policy)
