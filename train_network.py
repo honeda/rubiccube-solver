@@ -146,13 +146,13 @@ for e in range(args.epoch):
                 test_accuracy_value = binary_accuracy(y2, value)
 
                 logger.info(
-                    f"epoch = {epoch}, step = {t},\ntrain loss = "
+                    f"epoch = {epoch}, step = {t},train loss = "
                     f"{sum_loss_policy_interval / steps_interval:.5f}, "
                     f"{sum_loss_value_interval / steps_interval:.5f}, "
                     f"{(sum_loss_value_interval + sum_loss_value_interval) / steps_interval:.5f}"
-                    f"\ntest loss= {test_loss_policy:.5f}, {test_loss_value:.5f}, "
+                    f"test loss= {test_loss_policy:.5f}, {test_loss_value:.5f}, "
                     f"{test_loss_policy + test_loss_value:.5f}, "
-                    f"\ntest accuracy = {test_accuracy_policy:.5f}, {test_accuracy_value:.5f}"
+                    f"test accuracy = {test_accuracy_policy:.5f}, {test_accuracy_value:.5f}"
                 )
 
         steps_interval = 0
@@ -179,13 +179,13 @@ for e in range(args.epoch):
 
     logger.info(
         f"epoch = {epoch}, step = {t},"
-        "\ntrain loss = "
+        "train loss = "
         f"{sum_loss_policy_epoch / steps_epoch:.5f}, "
         f"{sum_loss_value_epoch / steps_epoch:.5f}, "
         f"{(sum_loss_value_epoch + sum_loss_value_epoch) / steps_epoch:.5f}"
-        f"\ntest loss= {sum_test_loss_policy:.5f}, {sum_test_loss_value:.5f}, "
+        f"test loss= {sum_test_loss_policy:.5f}, {sum_test_loss_value:.5f}, "
         f"{sum_test_loss_policy + sum_test_loss_value:.5f}, "
-        f"\ntest accuracy = {sum_test_accuracy_policy:.5f}, {sum_test_accuracy_value:.5f}"
+        f"test accuracy = {sum_test_accuracy_policy:.5f}, {sum_test_accuracy_value:.5f}"
     )
 
     if args.checkpoint:
