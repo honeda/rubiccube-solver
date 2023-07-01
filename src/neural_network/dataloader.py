@@ -151,7 +151,7 @@ class DataLoader:
         # つまり 0.81 < x <= 0.9 のアクションを選べば2手で終わるということになるので
         # この範囲のアクションがいくつかある場合はすべて2手で終わるということになる.
 
-        bins = np.array([GAMMA ** i for i in range(100)])
+        bins = np.array([GAMMA ** i for i in range(50)])
         idx = np.digitize(np.max(values), bins)
 
         label = ((values <= bins[idx] + 1e6) & (values > bins[idx + 1])).astype(float)
