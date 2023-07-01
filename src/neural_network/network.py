@@ -55,13 +55,15 @@ class Model(nn.Module):
         self.blocks = nn.Sequential(*[ResNetBlock(channels) for _ in range(blocks)])
 
         # policy
-        self.policy_conv = nn.Conv2d(in_channels=channels, out_channels=len(ACTION_NUMS))
+        self.policy_conv = nn.Conv2d(in_channels=channels, out_channels=len(ACTION_NUMS),
+                                     kernel_size=1, bias=False)
         self.policy_bn = nn.BatchNorm2d(len(ACTION_NUMS))
         self.policy_fc1 = nn.Linear(len(ACTION_NUMS) * 3 * 3, 32)
         self.policy_fc2 = nn.Linear(32, len(ACTION_NUMS))
 
         # value
-        self.value_conv = nn.Conv2d(in_channels=channels, out_channels=N_CHANNEL)
+        self.value_conv = nn.Conv2d(in_channels=channels, out_channels=N_CHANNEL,
+                                    kernel_size=1, bias=False)
         self.value_bn = nn.BatchNorm2d(N_CHANNEL)
         self.value_fc1 = nn.Linear(N_CHANNEL * 3 * 3, 32)
         self.value_fc2 = nn.Linear(32, 1)
