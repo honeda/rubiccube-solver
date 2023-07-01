@@ -2,6 +2,7 @@ import argparse
 import json
 from logging import getLogger
 from logging.config import dictConfig
+from pathlib import Path
 import torch
 import torch.optim as optim
 
@@ -81,6 +82,7 @@ def binary_accuracy(y, t):
 
 def save_checkpoint():
     path = args.checkpoint.format(**{"epoch": epoch, "step": t})
+    Path(path).parent.mkdir(exist_ok=True)
     logger.info(f"Saving the checkpoint to {path}")
     checkpoint = {
         "epoch": epoch,
