@@ -40,6 +40,7 @@ if args.gpu >= 0:
     device = torch.device(f"cuda:{args.gpu}")
 else:
     device = torch.device("cpu")
+logger.info(f"Device = {device}")
 
 # model
 model = Model()
