@@ -62,7 +62,7 @@ if args.resume:
     optimizer.load_state_dict(checkpoint["optimizer"])
 
     # change learning rate to argument value
-    optimizer.param_group[0]["lr"] = args.lr
+    optimizer.param_groups[0]["lr"] = args.lr
 else:
     epoch = 0
     t = 0  # total steps
