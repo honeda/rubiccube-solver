@@ -8,9 +8,10 @@ import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
-from src.neural_network.dataloader import DataLoader
-from src.neural_network.network import Model
-
+# from src.neural_network.data import MultiLabelDataset
+# from src.neural_network.network import Model
+from src.neural_network.data import MultiLabelDatasetOneChannel as MultiLabelDataset
+from src.neural_network.network_02 import Model
 
 parser = argparse.ArgumentParser()
 parser.add_argument("train_data", type=str, help="training data file")
