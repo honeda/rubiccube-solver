@@ -1,6 +1,7 @@
 poetry.lock
 notebooks/
 data/*
+checkpoints/*
 log/*
 *__pycache__
 .vscode/
