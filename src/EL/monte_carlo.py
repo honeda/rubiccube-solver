@@ -1,9 +1,12 @@
 import math
+import json
 from collections import defaultdict
 
 from src.EL.el_agent import ELAgent
 from src.env.action import int2str_actions, generate_random_action, ACTION_NUMS
 from src.utils.cube_util import encode_state
+
+GAMMA = json.load(open("config/global_parameters.json"))["gamma"]
 
 
 class MonteCarloAgent(ELAgent):
@@ -35,7 +38,7 @@ class MonteCarloAgent(ELAgent):
             Q_filedir (str, optional): Defaults to "data/".
             Q_filename (_type_, optional): Defaults to None.
         """
-        gamma = 0.9  # FIX
+        gamma = GAMMA  # FIX
 
         if n_unscramble_step == "auto":
             n_unscramble_step = n_theme_step
