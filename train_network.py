@@ -3,8 +3,10 @@ import json
 from logging import getLogger
 from logging.config import dictConfig
 from pathlib import Path
+
 import torch
 import torch.optim as optim
+from torch.utils.data import DataLoader
 
 from src.neural_network.dataloader import DataLoader
 from src.neural_network.network import Model
@@ -69,10 +71,26 @@ else:
 
 # read train & test data
 logger.info("reading training and test data.")
-train_dataloader = DataLoader(args.train_data, args.batchsize, device, shuffle=True)
-test_dataloader = DataLoader(args.test_data, args.test_batchsize, device)
-logger.info(f"Train data num: {len(train_dataloader):,}")
-logger.info(f"Test data num : {len(test_dataloader):,}")
+train_datasets = MultiLabelDataset(args.train_data)
+test_datasets = MultiLabelDataset(args.test_data)
+train_dataloader = DataLoader(
+    train_datasets,
+    batch_size=args.batchsize,
+    shuffle=True,
+    num_workers=5,
+    drop_last=True,
+    pin_memory=True if device != torch.device("cpu") else False
+)
+test_dataloader = DataLoader(
+    test_datasets,
+    batch_size=args.test_batchsize,
+    shuffle=False,
+    num_workers=3,
+    drop_last=True,
+    pin_memory=True if device != torch.device("cpu") else False
+)
+logger.info(f"Train data num: {len(train_datasets):,}")
+logger.info(f"Test data num : {len(test_datasets):,}")
 
 
 def binary_accuracy(y, t):
@@ -104,6 +122,9 @@ for e in range(args.epoch):
     sum_loss_value_epoch = 0
     for x, label, value in train_dataloader:
         model.train()
+        x = x.to(device)
+        label = label.to(device)
+        value = value.to(device)
 
         # forward
         y1, y2 = model(x)
@@ -132,28 +153,12 @@ for e in range(args.epoch):
         # Display training loss and test loss and accuracy
         # for each evaluation interval.
         if t % args.eval_interval == 0:
-            model.eval()
-
-            x, label, value = test_dataloader.sample()
-            with torch.no_grad():
-                # predict
-                y1, y2 = model(x)
-                # calc loss
-                test_loss_policy = bce_loss(y1, label).item()
-                test_loss_value = bce_loss(y2, value).item()
-                # calc accuracies
-                test_accuracy_policy = binary_accuracy(y1, label)
-                test_accuracy_value = binary_accuracy(y2, value)
-
-                logger.info(
-                    f"epoch = {epoch}, step = {t}, train loss = "
-                    f"{sum_loss_policy_interval / steps_interval:.3f}, "
-                    f"{sum_loss_value_interval / steps_interval:.3f}, "
-                    f"{(sum_loss_value_interval + sum_loss_value_interval) / steps_interval:.3f} "
-                    f"test loss= {test_loss_policy:.3f}, {test_loss_value:.3f}, "
-                    f"{test_loss_policy + test_loss_value:.3f}, "
-                    f"test accuracy = {test_accuracy_policy:.3f}, {test_accuracy_value:.3f}"
-                )
+            logger.info(
+                f"epoch = {epoch}, step = {t}, train loss = "
+                f"{sum_loss_policy_interval / steps_interval:.3f}, "
+                f"{sum_loss_value_interval / steps_interval:.3f}, "
+                f"{(sum_loss_value_interval + sum_loss_value_interval) / steps_interval:.3f} "
+            )
 
         steps_interval = 0
         sum_loss_policy_interval = 0
@@ -169,6 +174,10 @@ for e in range(args.epoch):
     model.eval()
     with torch.no_grad():
         for x, label, value in test_dataloader:
+            x = x.to(device)
+            label = label.to(device)
+            value = value.to(device)
+
             y1, y2 = model(x)
 
             test_steps += 1

@@ -9,7 +9,7 @@ from src.env.action import ACTION_NUMS
 from src.neural_network.data import QTable
 
 LOGGER_CONF_FILE = "config/logger.json"
-GAMMA = 0.9  # モンテカルロで使ったgammaの値. 手数ペナルティの役割
+GAMMA = json.load(open("config/global_parameters.json"))["gamma"]
 
 
 class DataLoader:
@@ -52,7 +52,7 @@ class DataLoader:
         self.value = self.torch_value.numpy().ravel()
 
         self.i = 0
-        self.executor = ThreadPoolExecutor(max_workers=1)
+        self.executor = ThreadPoolExecutor(max_workers=3)
 
     def load(self, q_file, remove_low_value=True):
         """
@@ -61,17 +61,10 @@ class DataLoader:
             remove_low_value (bool, optional) If True, remove low value data.
                 Defaults to True.
         """
-        # states, q_values = [], []
-        # for s, v in Q.items():
-        #     states.append(s)
-        #     q_values.append(v)
-
-        # states = np.array(states)
-        # q_values = np.array(q_values)
         q_table = np.fromfile(q_file, dtype=QTable)
 
         if remove_low_value:
-            th = GAMMA ** 30  # 30手かかる局面の価値より小さいデータを除去する.
+            th = GAMMA ** 10  # 30手かかる局面の価値より小さいデータを除去する.
             mask = (np.max(q_table["action"], axis=1) > th)
             q_table = q_table[mask]
             self.logger.info(f"Remove {np.sum(~mask)} low value data.")
