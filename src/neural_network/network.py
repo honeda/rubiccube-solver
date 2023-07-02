@@ -42,7 +42,7 @@ class Model(nn.Module):
      場合があるのでSoftmax + Crossentropy ではなく、
      Sigmoid + BinaryCrossentropy を使う.(多ラベル分類)
     """
-    def __init__(self, channels=N_CHANNEL * 2, blocks=3):
+    def __init__(self, channels=N_CHANNEL * 2, blocks=10):
         super(Model, self).__init__()
 
         self.relu = nn.ReLU()
